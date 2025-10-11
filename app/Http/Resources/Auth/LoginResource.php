@@ -32,6 +32,8 @@ class LoginResource extends JsonResource
             'verified_at' => $this->verified_at instanceof \Carbon\Carbon
                 ? $this->verified_at->toDateTimeString()
                 : ($this->verified_at ? Carbon::parse($this->verified_at)->toDateTimeString() : 'N/A'),
+            // ✅ Check if profile exists
+            'profile_setup' => $this->profile ? true : false,
         ];
     }
 }

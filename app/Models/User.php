@@ -47,13 +47,36 @@ class User extends Authenticatable
         return $this->hasOne(Otp::class)->latestOfMany();
     }
 
-    public function badgeCompletes()
+    public function profile()
     {
-        return $this->hasMany(BadgeComplete::class);
+        return $this->hasOne(Profile::class);
     }
 
-    public function stackCounts()
+    public function getProfileSetupAttribute(): bool
     {
-        return $this->hasMany(StackCount::class);
+        $profile = $this->profile;
+
+        if (! $profile) {
+            return false;
+        }
+
+        $requiredFields = [
+            'birth_date',
+            'gender',
+            'about_us',
+            'profile_picture',
+            'topic_offer',
+        ];
+
+        foreach ($requiredFields as $field) {
+            if ($field === 'topic_offer' && empty($profile->$field)) {
+                return false;
+            }
+            if ($field !== 'topic_offer' && (is_null($profile->$field) || $profile->$field === '')) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

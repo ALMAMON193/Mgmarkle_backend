@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Profile extends Model
+{
+    // Explicitly define mass assignable fields
+    protected $fillable = [
+        'user_id',
+        'birth_date',
+        'gender',
+        'about_us',
+        'profile_picture',
+        'affiliated_offer',
+        'topic_offer',
+        'categories',
+        'sub_categories',
+    ];
+
+    /**
+     * The user this profile belongs to.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Accessor for topic_offer to automatically decode JSON.
+     */
+    public function getTopicOfferAttribute($value)
+    {
+        return $value ? json_decode($value, true) : [];
+    }
+
+    /**
+     * Mutator for topic_offer to automatically encode JSON.
+     */
+    public function setTopicOfferAttribute($value)
+    {
+        $this->attributes['topic_offer'] = $value ? json_encode($value) : null;
+    }
+}

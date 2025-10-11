@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Http\Resources;
+
+use App\Helpers\Helper;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class ProfileResource extends JsonResource
+{
+    public function toArray($request)
+    {
+        return [
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'birth_date' => $this->birth_date,
+            'gender' => $this->gender,
+            'about_us' => $this->about_us,
+            'profile_picture' => $this->profile_picture ? Helper::generateURL($this->profile_picture) : '',
+            'affiliated_offer' => $this->affiliated_offer,
+            'topic_offer' => $this->topic_offer,
+            'categories' => $this->categories,
+            'sub_categories' => $this->sub_categories,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+}
