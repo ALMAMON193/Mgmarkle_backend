@@ -1,14 +1,16 @@
 <?php
 
-use App\Livewire\Dashboard\Overview;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\AuthApiController;
 use App\Http\Controllers\API\Category\CategoryApiController;
-use App\Http\Controllers\API\SpiritualGuide\HomeApiController;
-use App\Http\Controllers\API\SpiritualGuide\EventApiController;
-use App\Http\Controllers\API\SubCategory\SubCategoryApiController;
 use App\Http\Controllers\API\ProfileSetup\ProfileSetUpApiController;
+use App\Http\Controllers\API\Seeker\HomeController;
+use App\Http\Controllers\API\Seeker\RatingController;
+use App\Http\Controllers\API\SpiritualGuide\EventApiController;
+use App\Http\Controllers\API\SpiritualGuide\HomeApiController;
 use App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController;
+use App\Http\Controllers\API\SubCategory\SubCategoryApiController;
+use App\Livewire\Dashboard\Overview;
+use Illuminate\Support\Facades\Route;
 
 // Public authentication routes
 Route::prefix('auth')->group(function () {
@@ -42,8 +44,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('profile')->group(function () {
             // Event routes
             Route::get('available-slot', [ProfileApiController::class, 'availableSlots']);
-
+            Route::get('details', [ProfileApiController::class, 'profileDetails']);
+            Route::post('picture-update', [ProfileApiController::class, 'updateProfilePicture']);
         });
+    });
+    //   Spiritual Guide routes
+    Route::prefix('seeker')->group(function () {
+        // home
+        Route::get('home', [HomeController::class, 'index']);
+        // Event routes
+        Route::get('ratting', [RatingController::class, 'store']);
 
     });
 

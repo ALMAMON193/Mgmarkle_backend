@@ -1,9 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Livewire\Dashboard\Category\Index as CategoryIndex;
+use App\Livewire\Dashboard\SubCategory\Index as SubCategoryIndex;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::prefix('admin')->group(function () {
+
+    // Category Routes
+    Route::prefix('category')->group(function () {
+        Route::get('/', CategoryIndex::class)->name('category.index');
+
+    });
+
+    // SubCategory Routes
+    Route::prefix('sub-category')->group(function () {
+        Route::get('/', SubCategoryIndex::class)->name('sub-category.index');
+
+    });
+
 });
 
 require __DIR__.'/auth.php';

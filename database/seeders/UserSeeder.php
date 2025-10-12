@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
         // 10 User
         for ($i = 1; $i <= 5; $i++) {
             DB::table('users')->insert([
-                'name' => "User $i",
+                'name' => "seeker $i",
                 'email' => "seeker$i@gmail.com",
                 'password' => Hash::make('12345678'),
                 'user_type' => 'seeker',

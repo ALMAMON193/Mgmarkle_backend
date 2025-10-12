@@ -52,6 +52,12 @@ class User extends Authenticatable
         return $this->hasOne(Profile::class);
     }
 
+    // available slots
+    public function availableSlots()
+    {
+        return $this->hasMany(Availability::class);
+    }
+
     public function getProfileSetupAttribute(): bool
     {
         $profile = $this->profile;
@@ -78,5 +84,26 @@ class User extends Authenticatable
         }
 
         return true;
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
+
+    /**
+     * Average rating of this user.
+     */
+    public function averageRating(): float
+    {
+        return round($this->ratings()->avg('rating') ?? 0, 1); // e.g., 4.3
+    }
+
+    /**
+     * Total number of ratings.
+     */
+    public function ratingsCount(): int
+    {
+        return $this->ratings()->count();
     }
 }
