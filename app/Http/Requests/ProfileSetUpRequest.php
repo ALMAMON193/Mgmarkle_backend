@@ -21,8 +21,8 @@ class ProfileSetUpRequest extends FormRequest
             'affiliated_offer' => 'nullable|string|max:255',
             'topic_offer' => 'required|array',
             'topic_offer.*' => 'string|max:255',
-            'categories' => 'nullable|string|max:255',
-            'sub_categories' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
         ];
     }
 }

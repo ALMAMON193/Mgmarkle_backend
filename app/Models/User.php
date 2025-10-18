@@ -106,4 +106,11 @@ class User extends Authenticatable
     {
         return $this->ratings()->count();
     }
+
+    // App/Models/User.php
+
+    public function events()
+    {
+        return $this->hasMany(Event::class); // assuming 'user_id' is the foreign key in events table
+    }
 }

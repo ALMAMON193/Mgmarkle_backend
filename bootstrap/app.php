@@ -16,8 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases here
         $middleware->alias([
             'stack.record' => RecordStack::class,
+            'advanced.throttle' => \App\Http\Middleware\AdvancedThrottle::class,
+            'auth.rate.limit' => \App\Http\Middleware\AuthRateLimit::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->create();

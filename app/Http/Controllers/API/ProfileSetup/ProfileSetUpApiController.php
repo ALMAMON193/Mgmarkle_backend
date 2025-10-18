@@ -19,12 +19,21 @@ class ProfileSetUpApiController extends Controller
         $user = Auth::user();
 
         $data = $request->validated();
-        // Handle profile picture upload
+
+        // Map foreign keys
+        $data['category_id'] = $data['category_id'] ?? null;
+        $data['sub_category_id'] = $data['sub_category_id'] ?? null;
+
+        // Handle profile picture
         if ($request->hasFile('profile_picture')) {
             $data['profile_picture'] = Helper::uploadFile('profiles', $request->file('profile_picture'));
         }
 
-        // Store or update profile
+        // Encode JSON field
+        if (isset($data['topic_offer'])) {
+            $data['topic_offer'] = json_encode($data['topic_offer']);
+        }
+
         $profile = Profile::updateOrCreate(
             ['user_id' => $user->id],
             $data

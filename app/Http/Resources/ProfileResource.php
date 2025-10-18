@@ -18,8 +18,8 @@ class ProfileResource extends JsonResource
             'profile_picture' => $this->profile_picture ? Helper::generateURL($this->profile_picture) : '',
             'affiliated_offer' => $this->affiliated_offer,
             'topic_offer' => $this->topic_offer,
-            'categories' => $this->categories,
-            'sub_categories' => $this->sub_categories,
+            'category_name' => $this->category ? $this->category->name : null,
+            'sub_category_name' => $this->subCategory ? $this->subCategory->name : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

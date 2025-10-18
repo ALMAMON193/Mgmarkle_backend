@@ -6,25 +6,43 @@ use Illuminate\Database\Eloquent\Model;
 
 class Profile extends Model
 {
-    // Explicitly define mass assignable fields
+    // Mass assignable fields
     protected $fillable = [
         'user_id',
+        'category_id',
+        'sub_category_id',
         'birth_date',
         'gender',
         'about_us',
         'profile_picture',
         'affiliated_offer',
         'topic_offer',
-        'categories',
-        'sub_categories',
     ];
 
     /**
-     * The user this profile belongs to.
+     * Automatically cast topic_offer JSON to array
+     */
+    protected $casts = [
+        'topic_offer' => 'array',
+        'birth_date' => 'date',
+    ];
+
+    /**
+     * Profile belongs to a user
      */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function subCategory()
+    {
+        return $this->belongsTo(SubCategory::class);
     }
 
     /**
