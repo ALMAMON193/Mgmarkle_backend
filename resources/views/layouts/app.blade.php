@@ -45,7 +45,7 @@
                 <ul class="space-y-2">
                     <!-- Dashboard -->
                     <li>
-                        <a href="index.html"
+                        <a href="{{ route('dashboard') }}"
                             class="sidebar_links flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[hsl(222,47%,20%)] hover:text-[hsl(217,91%,60%)] font-medium">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -60,7 +60,7 @@
                     </li>
                     <!-- category -->
                     <li>
-                        <a href="index.html"
+                        <a href="{{ route('category.index') }}"
                             class="sidebar_links flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[hsl(222,47%,20%)] hover:text-[hsl(217,91%,60%)] font-medium">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -75,7 +75,7 @@
                     </li>
                     <!-- Sub  category -->
                     <li>
-                        <a href="index.html"
+                        <a href="{{ route('sub-category.index') }}"
                             class="sidebar_links flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[hsl(222,47%,20%)] hover:text-[hsl(217,91%,60%)] font-medium">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -177,7 +177,7 @@
                             <img src="https://i.pravatar.cc/40" alt="Profile"
                                 class="h-8 w-8 rounded-full border border-gray-200" />
                             <span class="text-sm font-medium text-gray-800 hidden md:block">
-                                Mamun
+                                {{ Auth::user()->name ?? 'Admin' }}
                             </span>
                             <i class="fas fa-chevron-down text-gray-500 text-xs hidden md:block"></i>
                         </button>
@@ -187,18 +187,18 @@
                             class="hidden absolute right-0 mt-3 w-60 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 transition-all duration-200">
                             <div class="px-4 py-3 border-b border-gray-100">
                                 <p class="text-sm font-semibold text-gray-800">
-                                    Mamun Hossain
+                                    {{ Auth::user()->name ?? 'Admin' }}
                                 </p>
-                                <p class="text-xs text-gray-500">mamun@example.com</p>
+                                <p class="text-xs text-gray-500"> {{ Auth::user()->email ?? 'example@example.com' }}
+                                </p>
                             </div>
-                            <button
-                                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                                <i class="fas fa-cog w-4"></i> Settings
-                            </button>
-                            <button
-                                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                                <i class="fas fa-sign-out-alt w-4"></i> Logout
-                            </button>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                    <i class="fas fa-sign-out-alt w-4"></i> Logout
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

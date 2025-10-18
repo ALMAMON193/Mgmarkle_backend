@@ -113,17 +113,12 @@
                         @forelse($categories as $index => $category)
                             <tr class="hover:bg-gray-50 transition-colors" wire:key="category-{{ $category->id }}">
                                 <td class="px-3 py-2 text-xs text-gray-900 animate-fadeIn"
-                                    style="animation-delay: {{ $index * 50 }}ms;">
-                                    {{ $category->id }}
-                                </td>
+                                    style="animation-delay: {{ $index * 50 }}ms;">{{ $category->id }}</td>
                                 <td class="px-3 py-2 text-xs text-gray-900 animate-fadeIn"
-                                    style="animation-delay: {{ $index * 50 + 100 }}ms;">
-                                    {{ $category->name }}
-                                </td>
+                                    style="animation-delay: {{ $index * 50 + 100 }}ms;">{{ $category->name }}</td>
                                 <td class="px-3 py-2 text-xs text-gray-600 animate-fadeIn"
                                     style="animation-delay: {{ $index * 50 + 200 }}ms;">
-                                    {{ $category->description ?? '-' }}
-                                </td>
+                                    {{ $category->description ?? '-' }}</td>
                                 <td class="px-3 py-2 animate-fadeIn"
                                     style="animation-delay: {{ $index * 50 + 300 }}ms;">
                                     @if ($category->status === 'active')
@@ -170,12 +165,13 @@
                     </tbody>
                 </table>
             </div>
+
             <!-- Pagination -->
             <x-form.pagination :paginator="$categories" :pageRange="$pageRange" />
         </div>
     </div>
 
-    <!-- Create/Edit Modal -->
+    <!-- Existing Modal code stays unchanged below -->
     @if ($showModal)
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
             x-data="{ open: true }" x-show="open" @keydown.escape.window="open = false; $wire.closeModal()">
@@ -234,8 +230,7 @@
             </div>
         </div>
     @endif
-
-    <!-- CSS Animations -->
+    <!-- Animations -->
     <style>
         @keyframes fadeIn {
             from {

@@ -9,7 +9,6 @@ use App\Http\Controllers\API\SpiritualGuide\EventApiController;
 use App\Http\Controllers\API\SpiritualGuide\HomeApiController;
 use App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController;
 use App\Http\Controllers\API\SubCategory\SubCategoryApiController;
-use App\Livewire\Dashboard\Overview;
 use Illuminate\Support\Facades\Route;
 
 // Public authentication routes
@@ -56,9 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('ratting', [RatingController::class, 'store']);
 
     });
-
 });
-Route::get('dashboard', Overview::class)->name('dashboard');
 // category and Sub category
 Route::get('category-list', [CategoryApiController::class, 'categoryList']);
 Route::get('sub-category-list', [SubCategoryApiController::class, 'subCategoryList']);
