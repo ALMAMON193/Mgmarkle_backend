@@ -23,9 +23,4 @@ class Event extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public function ratings()
-    {
-        return $this->hasMany(Rating::class);
-    }
 }

@@ -60,4 +60,9 @@ class Profile extends Model
     {
         $this->attributes['topic_offer'] = $value ? json_encode($value) : null;
     }
+
+    public function subCategories()
+    {
+        return $this->belongsToMany(SubCategory::class, 'poofile_sub_categories');
+    }
 }

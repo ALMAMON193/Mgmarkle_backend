@@ -23,6 +23,7 @@ class ListResource extends JsonResource
             'end_time' => $this->end_time,
             'location' => $this->location,
             'visibility' => $this->visibility,
+            'is_popular' => $this->is_popular,
             'image_url' => $this->image ? Helper::generateURL($this->image) : null,
         ];
     }

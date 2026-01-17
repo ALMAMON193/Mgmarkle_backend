@@ -25,4 +25,5 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     });
 });
+
 require __DIR__.'/api.php';

@@ -8,7 +8,9 @@ use App\Http\Resources\AvailableSlotsResponse;
 use App\Http\Resources\SpiritualGuide\ProfileResource;
 use App\Models\Availability;
 use App\Traits\ApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ProfileApiController extends Controller
 {
@@ -27,6 +29,53 @@ class ProfileApiController extends Controller
         return $this->sendResponse(
             AvailableSlotsResponse::collection($slots),
             'Available slots retrieved successfully.'
+        );
+    }
+
+    // add slot
+    public function addSlot(Request $request)
+    {
+        // ✅ 1. Validate the request
+        $validator = Validator::make($request->all(), [
+            'date' => 'required|date|after_or_equal:today',
+            'start_time' => 'required|string|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+        ]);
+
+        //  2. Detect day name automatically
+        $day = Carbon::parse($request->date)->format('l');
+
+        //  3. Prevent overlapping slots for same user
+        $conflict = Availability::where('user_id', auth()->id())
+            ->where('date', $request->date)
+            ->where(function ($query) use ($request) {
+                $query->whereBetween('start_time', [$request->start_time, $request->end_time])
+                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time])
+                    ->orWhere(function ($q) use ($request) {
+                        $q->where('start_time', '<', $request->start_time)
+                            ->where('end_time', '>', $request->end_time);
+                    });
+            })
+            ->exists();
+
+        if ($conflict) {
+            return $this->sendError('Time conflict detected. This slot overlaps with an existing availability.', [], 409);
+        }
+
+        //  4. Create the slot
+        $availability = Availability::create([
+            'user_id' => auth()->id(),
+            'date' => $request->date,
+            'day' => $day,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'status' => 'available',
+        ]);
+
+        //  5. Return a formatted API resource
+        return $this->sendResponse(
+            new AvailableSlotsResponse($availability),
+            'Availability slot created successfully.'
         );
     }
 

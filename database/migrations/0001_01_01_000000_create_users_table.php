@@ -18,10 +18,18 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('user_type', ['admin', 'seeker', 'spiritual_guide']);
+            $table->string('avatar')->nullable();
 
             // Password reset
             $table->string('reset_password_token', 80)->nullable();
             $table->dateTime('reset_password_token_expire_at')->nullable();
+
+            // --subscription
+            $table->boolean('is_subscribed')->default(false);
+            $table->string('subscription_id')->nullable();
+            $table->string('subscription_plan')->nullable();
+            $table->dateTime('subscription_start_at')->nullable();
+            $table->dateTime('subscription_end_at')->nullable();
 
             // User type and verification
             $table->boolean('is_verified')->default(false);

@@ -17,12 +17,13 @@ class ProfileSetUpRequest extends FormRequest
             'birth_date' => 'required|date',
             'gender' => 'required|in:male,female,others',
             'about_us' => 'required|string',
-            'profile_picture' => 'required|image|max:20048', // max 2MB
+            'profile_picture' => 'required|image|max:20048',
             'affiliated_offer' => 'nullable|string|max:255',
             'topic_offer' => 'required|array',
             'topic_offer.*' => 'string|max:255',
             'category_id' => 'nullable|exists:categories,id',
-            'sub_category_id' => 'nullable|exists:sub_categories,id',
+            'sub_categories' => 'required|array|min:1',
+            'sub_categories.*' => 'exists:sub_categories,id',
         ];
     }
 }

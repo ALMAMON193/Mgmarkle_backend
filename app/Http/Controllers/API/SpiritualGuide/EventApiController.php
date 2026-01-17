@@ -21,91 +21,6 @@ class EventApiController extends Controller
 {
     use ApiResponse;
 
-    public function store(StoreRequest $request)
-    {
-        $user = Auth::user();
-
-        $data = $request->validated();
-
-        // Handle image if exists
-        if ($request->hasFile('image')) {
-            $data['image'] = Helper::uploadFile('events', $request->file('image'));
-        }
-
-        try {
-            // Store event
-            $event = Event::create(array_merge($data, [
-                'user_id' => $user->id,
-            ]));
-            //  Clear cached Home data for this user
-            Cache::forget("spiritual_guide_home_{$user->id}");
-
-            return $this->sendResponse(
-                new StoreResource($event),
-                __('Event Created Successfully')
-            );
-        } catch (Exception $e) {
-            Log::error('Event Creation Error: '.$e->getMessage());
-
-            return $this->sendError('Error Creating Event');
-        }
-    }
-
-    public function update(UpdateRequest $request, Event $event)
-    {
-        $user = Auth::user();
-        $data = $request->validated();
-
-        // Check if user owns the event (optional but recommended)
-        if ($event->user_id !== $user->id) {
-            return $this->sendError('Unauthorized');
-        }
-
-        // Handle image if exists
-        if ($request->hasFile('image')) {
-            // Optional: delete old image if exists
-            if ($event->image) {
-                Helper::deleteFile($event->image);
-            }
-            $data['image'] = Helper::uploadFile('events', $request->file('image'));
-        }
-
-        try {
-            $event->update($data);
-
-            // Clear cached data for this user (Home or Event list)
-            Cache::forget("spiritual_guide_home_{$user->id}");
-            Cache::forget('events_all');
-            Cache::forget('events_weekly_'.now()->startOfWeek()->toDateString());
-            Cache::forget('events_monthly_'.now()->month.'_'.now()->year);
-
-            return $this->sendResponse(
-                new StoreResource($event),
-                __('Event Updated Successfully')
-            );
-        } catch (Exception $e) {
-            Log::error('Event Update Error: '.$e->getMessage());
-
-            return $this->sendError('Error Updating Event');
-        }
-    }
-
-    public function show($id)
-    {
-        try {
-            $event = Event::with('user')->findOrFail($id);
-
-            return $this->sendResponse(
-                new StoreResource($event),
-                __('Event Details Retrieved Successfully')
-            );
-        } catch (Exception $e) {
-            Log::error('Event Details Error: '.$e->getMessage());
-
-            return $this->sendError('Event Not Found', [], 404);
-        }
-    }
-
     public function eventList(Request $request)
     {
         $filter = $request->query('event_filter'); // weekly, monthly, or null
@@ -132,6 +47,99 @@ class EventApiController extends Controller
             ListResource::collection($events),
             __('Events Fetched Successfully')
         );
+    }
+
+    public function store(StoreRequest $request)
+    {
+        $user = Auth::user();
+        $data = $request->validated();
+
+        // Handle image if exists
+        if ($request->hasFile('image')) {
+            $data['image'] = Helper::uploadFile('events', $request->file('image'));
+        }
+
+        try {
+            // Store event
+            $event = Event::create(array_merge($data, [
+                'user_id' => $user->id,
+            ]));
+
+            // Clear event cache (all filters)
+            $today = Carbon::today()->toDateString();
+            Cache::forget("events_all_{$today}");
+            Cache::forget("events_weekly_{$today}");
+            Cache::forget("events_monthly_{$today}");
+
+            // Clear old home cache
+            Cache::forget("spiritual_guide_home_{$user->id}");
+
+            return $this->sendResponse(
+                new StoreResource($event),
+                __('Event Created Successfully')
+            );
+
+        } catch (Exception $e) {
+            Log::error('Event Creation Error: '.$e->getMessage());
+
+            return $this->sendError('Error Creating Event');
+        }
+    }
+
+    public function update(UpdateRequest $request, Event $event)
+    {
+        $user = Auth::user();
+        $data = $request->validated();
+
+        if ($event->user_id !== $user->id) {
+            return $this->sendError('Unauthorized');
+        }
+
+        // Handle image update
+        if ($request->hasFile('image')) {
+            if ($event->image) {
+                Helper::deleteFile($event->image);
+            }
+            $data['image'] = Helper::uploadFile('events', $request->file('image'));
+        }
+
+        try {
+            $event->update($data);
+
+            // Clear cached event list (Correct Format)
+            $today = Carbon::today()->toDateString();
+
+            Cache::forget("events_all_{$today}");
+            Cache::forget("events_weekly_{$today}");
+            Cache::forget("events_monthly_{$today}");
+
+            // Clear home cache
+            Cache::forget("spiritual_guide_home_{$user->id}");
+
+            return $this->sendResponse(
+                new StoreResource($event),
+                __('Event Updated Successfully')
+            );
+        } catch (Exception $e) {
+            Log::error('Event Update Error: '.$e->getMessage());
+
+            return $this->sendError('Error Updating Event');
+        }
+    }
+    public function show($id)
+    {
+        try {
+            $event = Event::with('user')->findOrFail($id);
+
+            return $this->sendResponse(
+                new StoreResource($event),
+                __('Event Details Retrieved Successfully')
+            );
+        } catch (Exception $e) {
+            Log::error('Event Details Error: '.$e->getMessage());
+
+            return $this->sendError('Event Not Found', [], 404);
+        }
     }
 
     public function eventDelete($id)

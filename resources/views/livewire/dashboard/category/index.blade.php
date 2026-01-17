@@ -65,7 +65,6 @@
                                     <option value="inactive">Inactive</option>
                                 </select>
                             </div>
-
                             <!-- Date Filter -->
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Created Date</label>

@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Event;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,7 +15,6 @@ return new class extends Migration
         Schema::create('ratings', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained();
-            $table->foreignIdFor(Event::class)->constrained();
             $table->decimal('rating', 2, 1);
             $table->text('comment')->nullable();
             $table->timestamps();

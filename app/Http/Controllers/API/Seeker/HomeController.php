@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\Seeker;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Seeker\HomeResource;
 use App\Models\Event;
+use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
@@ -16,31 +17,30 @@ class HomeController extends Controller
     {
         $today = now()->toDateString();
 
-        // Upcoming schedules (next 5 upcoming events)
+        // Upcoming schedules
         $upcomingSchedule = Event::where('date', '>=', $today)
             ->orderBy('date', 'asc')
             ->take(5)
-            ->with('ratings') // eager load ratings
             ->get();
 
-        // Popular events (top 5 by number of ratings)
-        $popularEvent = Event::withCount('ratings')
-            ->orderBy('ratings_count', 'desc')
-            ->take(5)
-            ->with('ratings')
-            ->get();
-
-        // Upcoming events (next 5 upcoming events)
+        // Popular events by average rating
+        $popularLeaders = User::whereHas('ratings', function ($query) {
+            $query->where('rating', '>=', 4); // only consider good ratings
+        })
+            ->withCount('ratings') // total number of ratings
+            ->withAvg('ratings', 'rating') // average rating
+            ->orderByDesc('ratings_avg_rating') // sort by average rating first
+            ->orderByDesc('ratings_count') // then by number of ratings
+            ->get(); // fetch all users
+        // Upcoming events
         $upcomingEvent = Event::where('date', '>=', $today)
             ->orderBy('date', 'asc')
             ->take(5)
-            ->with('ratings')
             ->get();
 
-        // Wrap in object to avoid array property error
         $data = (object) [
             'upcoming_schedule' => $upcomingSchedule,
-            'popular_event' => $popularEvent,
+            'popular_leaders' => $popularLeaders,
             'upcoming_event' => $upcomingEvent,
         ];
 

@@ -33,6 +33,7 @@ class StoreResource extends JsonResource
             'location' => $this->location,
             'description' => $this->description,
             'visibility' => $this->visibility,
+            'is_popular' => $this->is_popular,
             'image_url' => $this->image ? Helper::generateURL($this->image) : null,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),

@@ -17,30 +17,25 @@ class ProfileSetUpApiController extends Controller
     public function store(ProfileSetUpRequest $request)
     {
         $user = Auth::user();
+        $validatedData = $request->validated();
 
-        $data = $request->validated();
+        $subCategoryIds = $validatedData['sub_categories'] ?? [];
 
-        // Map foreign keys
-        $data['category_id'] = $data['category_id'] ?? null;
-        $data['sub_category_id'] = $data['sub_category_id'] ?? null;
+        unset($validatedData['sub_categories']);
 
-        // Handle profile picture
         if ($request->hasFile('profile_picture')) {
-            $data['profile_picture'] = Helper::uploadFile('profiles', $request->file('profile_picture'));
-        }
-
-        // Encode JSON field
-        if (isset($data['topic_offer'])) {
-            $data['topic_offer'] = json_encode($data['topic_offer']);
+            $validatedData['profile_picture'] = Helper::uploadFile('profiles', $request->file('profile_picture'));
         }
 
         $profile = Profile::updateOrCreate(
             ['user_id' => $user->id],
-            $data
+            $validatedData
         );
 
+        $profile->subCategories()->sync($subCategoryIds);
+
         return $this->sendResponse(
-            new ProfileResource($profile),
+            new ProfileResource($profile->load('subCategories')),
             __('Profile Setup Successfully')
         );
     }

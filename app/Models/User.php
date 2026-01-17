@@ -25,6 +25,13 @@ class User extends Authenticatable
         'otp',
         'purpose',
         'expires_at',
+
+        // subscription
+        'is_subscribed',
+        'subscription_id',
+        'subscription_plan',
+        'subscription_start_at',
+        'subscription_end_at',
     ];
 
     protected $hidden = [
@@ -34,7 +41,15 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'verified_at' => 'datetime',
+        'reset_password_token_expire_at' => 'datetime',
+
+        // subscription
+        'subscription_start_at' => 'datetime',
+        'subscription_end_at' => 'datetime',
+
         'password' => 'hashed',
+        'is_subscribed' => 'boolean',
     ];
 
     public function otps()
@@ -50,6 +65,23 @@ class User extends Authenticatable
     public function profile()
     {
         return $this->hasOne(Profile::class);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class);
+    }
+
+    //  bookings for events
+    public function eventBookings()
+    {
+        return $this->hasMany(EventBooking::class);
+    }
+
+    //  payments
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 
     // available slots
@@ -96,7 +128,7 @@ class User extends Authenticatable
      */
     public function averageRating(): float
     {
-        return round($this->ratings()->avg('rating') ?? 0, 1); // e.g., 4.3
+        return round($this->ratings()->avg('rating') ?? 0, 1);
     }
 
     /**
@@ -105,12 +137,5 @@ class User extends Authenticatable
     public function ratingsCount(): int
     {
         return $this->ratings()->count();
-    }
-
-    // App/Models/User.php
-
-    public function events()
-    {
-        return $this->hasMany(Event::class); // assuming 'user_id' is the foreign key in events table
     }
 }

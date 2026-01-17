@@ -17,11 +17,14 @@ class ProfileResource extends JsonResource
             'about_us' => $this->about_us,
             'profile_picture' => $this->profile_picture ? Helper::generateURL($this->profile_picture) : '',
             'affiliated_offer' => $this->affiliated_offer,
-            'topic_offer' => $this->topic_offer,
+            'topic_offer' => is_string($this->topic_offer) ? json_decode($this->topic_offer) : $this->topic_offer,
             'category_name' => $this->category ? $this->category->name : null,
-            'sub_category_name' => $this->subCategory ? $this->subCategory->name : null,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'sub_categories' => $this->subCategories->map(function ($sub) {
+                return [
+                    'id' => $sub->id,
+                    'name' => $sub->name,
+                ];
+            }),
         ];
     }
 }

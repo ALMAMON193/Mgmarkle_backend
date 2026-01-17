@@ -4,6 +4,8 @@ namespace App\Livewire\Dashboard\Category;
 
 use App\Models\Category;
 use App\Traits\WithCustomPagination;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -93,9 +95,9 @@ class Index extends Component
             $this->description = $category->description;
             $this->status = $category->status;
             $this->showModal = true;
-            \Log::info("Edit method called for Category ID: $id, showModal set to true");
-        } catch (\Exception $e) {
-            \Log::error('Error in edit method: '.$e->getMessage());
+            Log::info("Edit method called for Category ID: $id, showModal set to true");
+        } catch (Exception $e) {
+            Log::error('Error in edit method: '.$e->getMessage());
             session()->flash('error', 'Failed to load category for editing.');
         }
     }

@@ -2,34 +2,63 @@
 
 namespace App\Http\Resources\Seeker;
 
-use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class HomeResource extends JsonResource
 {
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
-        // Map each event collection
-        $mapEvent = fn ($events) => $events->map(function ($event) {
+        return [
+            'upcoming_schedule' => $this->formatBasicEvents($this->upcoming_schedule ?? []),
+            'popular_leaders' => $this->formatPopularEvents($this->popular_event ?? []),
+            'upcoming_event' => $this->formatBasicEvents($this->upcoming_event ?? []),
+        ];
+    }
+
+    // For upcoming_schedule and upcoming_event (no ratings)
+    private function formatBasicEvents($events): array
+    {
+        return collect($events)->map(function ($event) {
             return [
                 'id' => $event->id,
                 'title' => $event->title,
                 'category' => $event->category,
-                'date' => $event->date,
-                'start_time' => $event->start_time,
-                'end_time' => $event->end_time,
-                'location' => $event->location,
-                'visibility' => $event->visibility,
-                'image' => $event->image,
-                'average_rating' => $event->ratings->avg('rating') ?? 0,
-                'total_ratings' => $event->ratings->count(),
+                'date' => $this->formatDate($event->date),
+                'start_time' => $this->formatTime($event->start_time),
+                'end_time' => $this->formatTime($event->end_time),
             ];
-        });
+        })->toArray();
+    }
 
-        return [
-            'upcoming_schedule' => $mapEvent($this->upcoming_schedule),
-            'popular_event' => $mapEvent($this->popular_event),
-            'upcoming_event' => $mapEvent($this->upcoming_event),
-        ];
+    // For popular_event (with ratings)
+    private function formatPopularEvents($events): array
+    {
+        return collect($events)->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'category' => $event->category,
+                'date' => $this->formatDate($event->date),
+                'start_time' => $this->formatTime($event->start_time),
+                'end_time' => $this->formatTime($event->end_time),
+                'ratings_count' => $event->ratings_count ?? 0,
+                'ratings' => $event->ratings->map(fn ($r) => [
+                    'id' => $r->id,
+                    'rating' => $r->rating,
+                    'comment' => $r->comment,
+                ]),
+            ];
+        })->toArray();
+    }
+
+    private function formatDate($date): ?string
+    {
+        return $date ? Carbon::parse($date)->format('d F, Y') : null;
+    }
+
+    private function formatTime($time): ?string
+    {
+        return $time ? Carbon::parse($time)->format('g A') : null;
     }
 }

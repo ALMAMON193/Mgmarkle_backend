@@ -23,17 +23,19 @@ class HomeApiController extends Controller
         $cacheKey = "spiritual_guide_home_{$user->id}";
 
         // Cache data for 10 minutes
-        $data = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $today) {
+        $data = Cache::remember($cacheKey, now()->addMinutes(1), function () use ($user, $today) {
             return [
                 'today_schedule' => Event::where('user_id', $user->id)
                     ->whereDate('date', $today)
                     ->orderBy('start_time')
+                    ->orderBy('created_at', 'desc')
                     ->get(),
 
                 'new_booking_request' => Event::where('user_id', $user->id)
-                    ->where('visibility', 'private')
+                    ->whereDate('date', $today)
+                    ->whereDate('created_at', $today)
                     ->latest()
-                    ->take(5)
+                    ->take(3)
                     ->get(),
 
                 'upcoming_request' => Event::where('user_id', $user->id)

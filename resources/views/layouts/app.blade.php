@@ -90,7 +90,7 @@
                     </li>
 
                     <!-- Pages Dropdown -->
-                    <li>
+                    {{-- <li>
                         <button onclick="toggleDropdown(this)"
                             class="sidebar_links flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[hsl(222,47%,20%)] hover:text-[hsl(217,91%,60%)]">
                             <div class="flex items-center gap-3">
@@ -128,7 +128,7 @@
                                 </a>
                             </li>
                         </ul>
-                    </li>
+                    </li> --}}
                 </ul>
             </nav>
         </aside>
