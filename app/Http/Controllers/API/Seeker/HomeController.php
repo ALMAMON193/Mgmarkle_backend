@@ -15,26 +15,27 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {
+        $authUserId = auth()->id();
         $today = now()->toDateString();
+        $upcomingSchedule = \App\Models\EventBooking::where('user_id', $authUserId)
+            ->where('status', 'paid')
+            ->where('starts_at', '>', now())
+            ->with(['event', 'event.user', 'event.user.profile'])
+            ->orderBy('starts_at', 'asc')
+            ->first();
 
-        // Upcoming schedules
-        $upcomingSchedule = Event::where('date', '>=', $today)
-            ->orderBy('date', 'asc')
+        $popularLeaders = User::where('user_type', 'spiritual_guide')
+            ->whereHas('ratings')
+            ->with('profile')
+            ->withAvg('ratings', 'rating')
+            ->orderByDesc('ratings_avg_rating')
             ->take(5)
             ->get();
 
-        // Popular events by average rating
-        $popularLeaders = User::whereHas('ratings', function ($query) {
-            $query->where('rating', '>=', 4); // only consider good ratings
-        })
-            ->withCount('ratings') // total number of ratings
-            ->withAvg('ratings', 'rating') // average rating
-            ->orderByDesc('ratings_avg_rating') // sort by average rating first
-            ->orderByDesc('ratings_count') // then by number of ratings
-            ->get(); // fetch all users
-        // Upcoming events
         $upcomingEvent = Event::where('date', '>=', $today)
+            ->where('visibility', 'public')
             ->orderBy('date', 'asc')
+            ->orderBy('start_time', 'asc')
             ->take(5)
             ->get();
 

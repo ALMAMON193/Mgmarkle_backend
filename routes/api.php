@@ -1,83 +1,95 @@
 <?php
 
-use App\Http\Controllers\API\Auth\AuthApiController;
-use App\Http\Controllers\API\Category\CategoryApiController;
-use App\Http\Controllers\API\Message\MessageApiController;
-use App\Http\Controllers\API\ProfileSetup\ProfileSetUpApiController;
-use App\Http\Controllers\API\Seeker\HomeController;
-use App\Http\Controllers\API\Seeker\RatingController;
-use App\Http\Controllers\API\Seeker\SearchApiController;
-use App\Http\Controllers\API\SpiritualGuide\EventApiController;
-use App\Http\Controllers\API\SpiritualGuide\HomeApiController;
-use App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController;
-use App\Http\Controllers\API\SubCategory\SubCategoryApiController;
-use App\Http\Controllers\API\Zoom\ZoomController;
 use Illuminate\Support\Facades\Route;
 
-// Public authentication routes
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+// Authentication
 Route::prefix('auth')->middleware(['auth.rate.limit'])->group(function () {
-    Route::post('login', [AuthApiController::class, 'loginApi']);
-    Route::post('register', [AuthApiController::class, 'registerApi']);
-    Route::post('verify-email', [AuthApiController::class, 'verifyEmailApi']);
-    Route::post('forgot-password', [AuthApiController::class, 'forgotPasswordApi']);
-    Route::post('reset-password', [AuthApiController::class, 'resetPasswordApi']);
-    Route::post('resend-otp', [AuthApiController::class, 'resendOtpApi']);
-    Route::post('verify-otp', [AuthApiController::class, 'verifyOtpApi']);
+    Route::post('login', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'loginApi']);
+    Route::post('register', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'registerApi']);
+    Route::post('verify-email', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'verifyEmailApi']);
+    Route::post('forgot-password', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'forgotPasswordApi']);
+    Route::post('reset-password', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'resetPasswordApi']);
+    Route::post('resend-otp', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'resendOtpApi']);
+    Route::post('verify-otp', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'verifyOtpApi']);
 });
+
+// Categories & Sub Categories (Public)
+Route::get('category-list', [\App\Http\Controllers\API\Category\CategoryApiController::class, 'categoryList']);
+Route::get('sub-category-list', [\App\Http\Controllers\API\SubCategory\SubCategoryApiController::class, 'subCategoryList']);
+
+/*
+|--------------------------------------------------------------------------
+| Protected Routes (Sanctum Authenticated)
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
-    // Send message
-    Route::post('/send-message', [MessageApiController::class, 'sendMessage']);
 
-    // Conversation between two users
-    Route::get('/messages/{userId}', [MessageApiController::class, 'getUserMessages']);
-    Route::post('auth/logout', [AuthApiController::class, 'logoutApi']);
-    // profile setup
-    Route::get('profile', [ProfileSetUpApiController::class, 'show']);
+    // --- Common / Shared Routes ---
 
-    Route::post('profile-setup', [ProfileSetUpApiController::class, 'store']);
+    // Auth Actions
+    Route::post('auth/logout', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'logoutApi']);
 
-    //   Spiritual Guide routes
+    // Profile Setup (Initial Setup)
+    Route::get('profile', [\App\Http\Controllers\API\ProfileSetup\ProfileSetUpApiController::class, 'show']);
+    Route::post('profile-setup', [\App\Http\Controllers\API\ProfileSetup\ProfileSetUpApiController::class, 'store']);
+
+    // Messaging System
+    Route::post('/send-message', [\App\Http\Controllers\API\Message\MessageApiController::class, 'sendMessage']);
+    Route::get('/messages/{userId}', [\App\Http\Controllers\API\Message\MessageApiController::class, 'getUserMessages']);
+    Route::get('/users', [\App\Http\Controllers\API\Message\MessageApiController::class, 'userList']);
+
+    // --- Spiritual Guide Routes ---
     Route::prefix('spiritual-guide')->group(function () {
-        // Event routes
-        Route::get('event-list', [EventApiController::class, 'eventList']);
-        Route::post('event-create', [EventApiController::class, 'store']);
-        Route::post('events/{event}', [EventApiController::class, 'update']);
-        Route::get('event-details/{id}', [EventApiController::class, 'show']);
-        Route::delete('event-delete/{id}', [EventApiController::class, 'eventDelete']);
 
-        // home api routes
-        Route::get('home', [HomeApiController::class, 'index']);
+        // Dashboard / Home
+        Route::get('home', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'index']);
 
+        // Event Management
+        Route::get('event-list', [\App\Http\Controllers\API\SpiritualGuide\EventApiController::class, 'eventList']);
+        Route::post('event-create', [\App\Http\Controllers\API\SpiritualGuide\EventApiController::class, 'store']);
+        Route::get('event-details/{id}', [\App\Http\Controllers\API\SpiritualGuide\EventApiController::class, 'show']);
+        Route::post('events/{event}', [\App\Http\Controllers\API\SpiritualGuide\EventApiController::class, 'update']);
+        Route::delete('event-delete/{id}', [\App\Http\Controllers\API\SpiritualGuide\EventApiController::class, 'eventDelete']);
+
+        // Profile Management & Availability
         Route::prefix('profile')->group(function () {
-            // Event routes
-            Route::get('available-slot', [ProfileApiController::class, 'availableSlots']);
-            // add slot
-            Route::post('add-slot', [ProfileApiController::class, 'addSlot']);
-            Route::get('details', [ProfileApiController::class, 'profileDetails']);
-            Route::post('picture-update', [ProfileApiController::class, 'updateProfilePicture']);
+            Route::get('details', [\App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController::class, 'profileDetails']);
+            Route::post('picture-update', [\App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController::class, 'updateProfilePicture']);
+            // Availability / Slots
+            Route::get('available-slot', [\App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController::class, 'availableSlots']);
+            Route::post('add-slot', [\App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController::class, 'addSlot']);
         });
-
-        Route::middleware('auth:sanctum')->group(function () {
-            // Zoom Routes
-            Route::post('/zoom/meeting', [ZoomController::class, 'create']);
-            Route::get('/zoom/meetings', [ZoomController::class, 'list']);
-            Route::delete('/zoom/meeting/{id}', [ZoomController::class, 'delete']);
-        });
+        // Zoom Integration
+        Route::post('/zoom/meeting', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'create']);
+        Route::get('/zoom/meetings', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'list']);
+        Route::delete('/zoom/meeting/{id}', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'delete']);
     });
-    //   Spiritual Guide routes
+    // --- Seeker Routes ---
     Route::prefix('seeker')->group(function () {
-        // home
-        Route::get('home', [HomeController::class, 'index']);
-        // Event routes
-        Route::post('ratting', [RatingController::class, 'store']);
+        // Dashboard / Home
+        Route::get('home', [\App\Http\Controllers\API\Seeker\HomeController::class, 'index']);
+        // Profile Search & Filtering
+        Route::get('profiles/search', [\App\Http\Controllers\API\Seeker\SearchApiController::class, 'searchProfiles']);
+        Route::get('profiles/filter', [\App\Http\Controllers\API\Seeker\SearchApiController::class, 'filterProfiles']);
+        // Leader Details
+        Route::get('spiritual-guides/{id}', [\App\Http\Controllers\API\Seeker\LeaderController::class, 'show']);
+        // Event Interaction
+        Route::get('events/{id}', [\App\Http\Controllers\API\Seeker\EventController::class, 'show']);
+        Route::post('ratting', [\App\Http\Controllers\API\Seeker\RatingController::class, 'store']);
 
-        // search profile
-        Route::get('profiles/search', [SearchApiController::class, 'searchProfiles']);
-        Route::get('profiles/filter', [SearchApiController::class, 'filterProfiles']);
+        // Payment
+        Route::post('payment/setup-intent', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'createSetupIntent']);
+        Route::get('payment/methods', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'getPaymentMethods']);
+        Route::post('payment/add', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'addPaymentMethod']);
+        Route::post('payment/remove', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'detachPaymentMethod']);
+        Route::post('payment/default', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'setDefaultPaymentMethod']);
     });
+
 });
-// category and Sub category
-Route::get('category-list', [CategoryApiController::class, 'categoryList']);
-Route::get('sub-category-list', [SubCategoryApiController::class, 'subCategoryList']);
-// User list
-Route::get('/users', [MessageApiController::class, 'userList']);

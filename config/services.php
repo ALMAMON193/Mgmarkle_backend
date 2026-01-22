@@ -41,4 +41,9 @@ return [
         'base_url' => env('ZOOM_BASE_URL', 'https://api.zoom.us/v2'),
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+    ],
+
 ];

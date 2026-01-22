@@ -65,4 +65,27 @@ class Profile extends Model
     {
         return $this->belongsToMany(SubCategory::class, 'poofile_sub_categories');
     }
+
+    /**
+     * Scope a query to only include profiles matching the search term.
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->whereHas('user', function ($uq) use ($search) {
+                $uq->where('name', 'like', '%' . $search . '%');
+            })
+                ->orWhereHas('category', function ($cq) use ($search) {
+                    $cq->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('subCategories', function ($scq) use ($search) {
+                    $scq->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('user.events', function ($eq) use ($search) {
+                    $eq->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                })
+                ->orWhere('topic_offer', 'like', '%' . $search . '%');
+        });
+    }
 }

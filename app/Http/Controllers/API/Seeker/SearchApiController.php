@@ -7,8 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Profile;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class SearchApiController extends Controller
 {
@@ -16,98 +14,74 @@ class SearchApiController extends Controller
 
     public function searchProfiles(Request $request)
     {
-        // Create a unique cache key based on request parameters
-        $cacheKey = 'search_profiles_'.md5(json_encode($request->all()));
+        // Search by User Name, Category, or Topic
+        $query = Profile::query()->with(['user', 'category', 'subCategories']);
 
-        $apiResponse = Cache::remember($cacheKey, 60 * 5, function () use ($request) { // Cache for 5 minutes
-            $query = Profile::query()->with(['user', 'category', 'subCategory']);
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
 
-            if ($request->filled('user_name')) {
-                $query->whereHas('user', function ($q) use ($request) {
-                    $q->where('name', 'like', '%'.$request->user_name.'%');
-                });
-            }
-
-            if ($request->filled('leader')) {
-                $query->where('leader', 'like', '%'.$request->leader.'%');
-            }
-
-            return $query->get()->map(function ($profile) {
-                $avgRating = \App\Models\Rating::where('user_id', $profile->user_id)->avg('rating');
-
-                return [
-                    'name' => $profile->user->name,
-                    'category' => $profile->category->name,
-                    'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : null,
-                    'average_rating' => round($avgRating, 1),
-                ];
+        // Specific field filters if provided separately
+        if ($request->filled('user_name')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->user_name.'%');
             });
+        }
+
+        $profiles = $query->get()->map(function ($profile) {
+            return [
+                'user_id' => $profile->user_id,
+                'name' => $profile->user->name ?? null,
+                'category' => $profile->category->name ?? null,
+                'sub_categories' => $profile->subCategories->pluck('name'), // Return list of subcategories
+                'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : null,
+                'average_rating' => $profile->user->averageRating(), // Use model helper
+            ];
         });
 
-        return $this->sendResponse($apiResponse, __('Profiles Retrieved Successfully'));
+        return $this->sendResponse($profiles, __('Profiles Retrieved Successfully'));
     }
 
     public function filterProfiles(Request $request)
     {
-        // Create a unique cache key based on all incoming filter parameters
-        $cacheKey = 'filter_profiles_'.md5(json_encode($request->all()));
+        // Base query with relationships
+        $query = Profile::with(['user', 'category', 'subCategories']);
 
-        $profiles = Cache::remember($cacheKey, now()->addMinutes(1), function () use ($request) {
-
-            // Base query with relationships
-            $query = Profile::with(['user', 'category', 'subCategory']);
-
-            // Filter by Category Name
-            if ($request->filled('category_name')) {
-                $query->whereHas('category', function ($q) use ($request) {
-                    $q->where('name', 'like', '%'.$request->category_name.'%');
-                });
-            }
-
-            // Filter by Sub Category Name
-            if ($request->filled('sub_category_name')) {
-                $subCategoryName = urldecode($request->sub_category_name);
-                $query->whereHas('subCategory', function ($q) use ($subCategoryName) {
-                    $q->where('name', 'like', '%'.$subCategoryName.'%');
-                });
-            }
-
-            // Filter by Minimum Average Rating for events created by the user
-            if ($request->filled('rating')) {
-                $rating = $request->rating;
-                $query->whereHas('user', function ($q) use ($rating) {
-                    $q->whereHas('events', function ($ev) use ($rating) {
-                        $ev->join('ratings', 'ratings.event_id', '=', 'events.id')
-                            ->select('events.user_id', DB::raw('AVG(ratings.rating) as avg_rating'))
-                            ->groupBy('events.user_id')
-                            ->havingRaw('AVG(ratings.rating) >= ?', [$rating]);
-                    });
-                });
-            }
-
-            // Execute the query
-            $profilesData = $query->get();
-
-            // Map results to API response format
-            return $profilesData->map(function ($profile) {
-                // Calculate average rating for events created by this user
-                $avgRating = $profile->user->events()
-                    ->with('ratings')
-                    ->get()
-                    ->pluck('ratings')
-                    ->flatten()
-                    ->avg('rating');
-
-                return [
-                    'name' => $profile->user->name ?? null,
-                    'category' => $profile->category->name ?? null,
-                    'sub_category' => $profile->subCategory->name ?? null,
-                    'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : null,
-                    'average_rating' => round($avgRating ?? 0, 1),
-                ];
+        // Filter by Category Name (Exact or Partial)
+        if ($request->filled('category_name')) {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->category_name.'%');
             });
+        }
+
+        // Filter by Sub Category Name
+        if ($request->filled('sub_category_name')) {
+            $subCategoryName = urldecode($request->sub_category_name);
+            $query->whereHas('subCategories', function ($q) use ($subCategoryName) {
+                $q->where('name', 'like', '%'.$subCategoryName.'%');
+            });
+        }
+        $profiles = $query->get();
+        // Filter by Rating (Calculated field)
+        if ($request->filled('rating')) {
+            $minRating = (float) $request->rating;
+            $profiles = $profiles->filter(function ($profile) use ($minRating) {
+                return $profile->user->averageRating() >= $minRating;
+            });
+        }
+
+        // Map results
+        $data = $profiles->values()->map(function ($profile) { // values() resets keys after filter
+            return [
+                'user_id' => $profile->user_id,
+                'name' => $profile->user->name ?? null,
+                'category' => $profile->category->name ?? null,
+                'sub_categories' => $profile->subCategories->pluck('name'),
+                'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : null,
+                'average_rating' => $profile->user->averageRating(),
+            ];
         });
 
-        return $this->sendResponse($profiles, __('Profiles Filtered Successfully'));
+        return $this->sendResponse($data, __('Profiles Filtered Successfully'));
     }
 }

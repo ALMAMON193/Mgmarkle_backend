@@ -14,7 +14,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class EventApiController extends Controller
@@ -23,25 +22,19 @@ class EventApiController extends Controller
 
     public function eventList(Request $request)
     {
-        $filter = $request->query('event_filter'); // weekly, monthly, or null
+        $filter = $request->query('event_filter');
         $today = Carbon::today();
 
-        // Generate a unique cache key based on the filter and date
-        $cacheKey = 'events_'.($filter ?? 'all').'_'.$today->toDateString();
+        $query = Event::query()->orderBy('created_at', 'desc');
 
-        // Attempt to get from cache, if not, execute the query and cache it
-        $events = Cache::remember($cacheKey, 60 * 5, function () use ($filter, $today) {
-            $query = Event::query()->orderBy('created_at', 'desc');
+        if ($filter === 'weekly') {
+            $query->whereBetween('date', [$today->startOfWeek()->toDateString(), $today->endOfWeek()->toDateString()]);
+        } elseif ($filter === 'monthly') {
+            $query->whereMonth('date', $today->month)
+                ->whereYear('date', $today->year);
+        }
 
-            if ($filter === 'weekly') {
-                $query->whereBetween('date', [$today->startOfWeek()->toDateString(), $today->endOfWeek()->toDateString()]);
-            } elseif ($filter === 'monthly') {
-                $query->whereMonth('date', $today->month)
-                    ->whereYear('date', $today->year);
-            }
-
-            return $query->get();
-        });
+        $events = $query->get();
 
         return $this->sendResponse(
             ListResource::collection($events),
@@ -64,15 +57,6 @@ class EventApiController extends Controller
             $event = Event::create(array_merge($data, [
                 'user_id' => $user->id,
             ]));
-
-            // Clear event cache (all filters)
-            $today = Carbon::today()->toDateString();
-            Cache::forget("events_all_{$today}");
-            Cache::forget("events_weekly_{$today}");
-            Cache::forget("events_monthly_{$today}");
-
-            // Clear old home cache
-            Cache::forget("spiritual_guide_home_{$user->id}");
 
             return $this->sendResponse(
                 new StoreResource($event),
@@ -106,16 +90,6 @@ class EventApiController extends Controller
         try {
             $event->update($data);
 
-            // Clear cached event list (Correct Format)
-            $today = Carbon::today()->toDateString();
-
-            Cache::forget("events_all_{$today}");
-            Cache::forget("events_weekly_{$today}");
-            Cache::forget("events_monthly_{$today}");
-
-            // Clear home cache
-            Cache::forget("spiritual_guide_home_{$user->id}");
-
             return $this->sendResponse(
                 new StoreResource($event),
                 __('Event Updated Successfully')
@@ -126,6 +100,7 @@ class EventApiController extends Controller
             return $this->sendError('Error Updating Event');
         }
     }
+
     public function show($id)
     {
         try {
