@@ -13,6 +13,7 @@ class EventBooking extends Model
     protected $fillable = [
         'user_id',
         'event_id',
+        'leader_id',
         'booking_type',
         'amount',
         'status',

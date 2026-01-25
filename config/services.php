@@ -35,15 +35,14 @@ return [
         ],
     ],
     'zoom' => [
-        'account_id' => env('ZOOM_ACCOUNT_ID'),
-        'client_id' => env('ZOOM_CLIENT_ID'),
-        'client_secret' => env('ZOOM_CLIENT_SECRET'),
-        'base_url' => env('ZOOM_BASE_URL', 'https://api.zoom.us/v2'),
+        'sdk_key' => env('ZOOM_SDK_KEY'),
+        'sdk_secret' => env('ZOOM_SDK_SECRET'),
     ],
 
     'stripe' => [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
 ];

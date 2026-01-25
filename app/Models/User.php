@@ -25,6 +25,8 @@ class User extends Authenticatable
         'otp',
         'purpose',
         'expires_at',
+        'stripe_customer_id',
+        'session_price',
 
         // subscription
         'is_subscribed',

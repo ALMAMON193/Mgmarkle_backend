@@ -67,9 +67,8 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
             Route::post('add-slot', [\App\Http\Controllers\API\SpiritualGuide\Profile\ProfileApiController::class, 'addSlot']);
         });
         // Zoom Integration
-        Route::post('/zoom/meeting', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'create']);
-        Route::get('/zoom/meetings', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'list']);
-        Route::delete('/zoom/meeting/{id}', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'delete']);
+        Route::post('/zoom/generate-sdk-token', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'generateSdkToken']);
+        Route::get('/zoom/sdk-credentials', [\App\Http\Controllers\API\Zoom\ZoomController::class, 'getSdkCredentials']);
     });
     // --- Seeker Routes ---
     Route::prefix('seeker')->group(function () {
@@ -85,11 +84,22 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
         Route::post('ratting', [\App\Http\Controllers\API\Seeker\RatingController::class, 'store']);
 
         // Payment
-        Route::post('payment/setup-intent', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'createSetupIntent']);
+        // Route::post('payment/setup-intent', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'createSetupIntent']);
         Route::get('payment/methods', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'getPaymentMethods']);
         Route::post('payment/add', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'addPaymentMethod']);
         Route::post('payment/remove', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'detachPaymentMethod']);
         Route::post('payment/default', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'setDefaultPaymentMethod']);
+
+        // New Payment Routes
+        Route::post('checkout-session', [\App\Http\Controllers\API\Seeker\PaymentController::class, 'checkoutSession']);
+
+        // Appointment Routes
+        Route::get('appointments', [\App\Http\Controllers\API\Seeker\AppointmentController::class, 'index']);
+        Route::get('appointments/{id}', [\App\Http\Controllers\API\Seeker\AppointmentController::class, 'show']);
+        Route::post('appointments/{id}/zoom', [\App\Http\Controllers\API\Seeker\AppointmentController::class, 'updateZoom']);
     });
+
+    // Public Webhook Route
+    Route::post('stripe/webhook', [\App\Http\Controllers\API\Seeker\PaymentController::class, 'handleWebhook']);
 
 });

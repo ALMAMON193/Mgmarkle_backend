@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "dij-digital/langfuse-php": "^0.1.4",
+        "firebase/php-jwt": "^7.0",
         "larafuse/larafuse": "^1.0",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.2",

@@ -25,18 +25,17 @@ class HomeController extends Controller
             ->first();
 
         $popularLeaders = User::where('user_type', 'spiritual_guide')
-            ->whereHas('ratings')
             ->with('profile')
             ->withAvg('ratings', 'rating')
-            ->orderByDesc('ratings_avg_rating')
-            ->take(5)
+            ->orderByRaw('ratings_avg_rating IS NULL ASC, ratings_avg_rating DESC')
+            ->take(3)
             ->get();
 
         $upcomingEvent = Event::where('date', '>=', $today)
             ->where('visibility', 'public')
             ->orderBy('date', 'asc')
             ->orderBy('start_time', 'asc')
-            ->take(5)
+            ->take(3)
             ->get();
 
         $data = (object) [

@@ -18,6 +18,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('user_type', ['admin', 'seeker', 'spiritual_guide']);
+            $table->decimal('session_price', 10, 2)->default(0.00);
+            $table->string('stripe_customer_id')->nullable();
             $table->string('avatar')->nullable();
 
             // Password reset

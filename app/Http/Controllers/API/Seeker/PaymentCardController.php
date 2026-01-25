@@ -5,7 +5,11 @@ namespace App\Http\Controllers\API\Seeker;
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-use Stripe\{Customer, EphemeralKey, PaymentMethod, SetupIntent, Stripe};
+use Stripe\Customer;
+use Stripe\EphemeralKey;
+use Stripe\PaymentMethod;
+use Stripe\SetupIntent;
+use Stripe\Stripe;
 
 class PaymentCardController extends Controller
 {
@@ -19,32 +23,32 @@ class PaymentCardController extends Controller
     /**
      * Create Setup Intent
      */
-    public function createSetupIntent(Request $request)
-    {
-        try {
-            $user = $this->getOrCreateCustomer($request->user());
+    // public function createSetupIntent(Request $request)
+    // {
+    //     try {
+    //         $user = $this->getOrCreateCustomer($request->user());
 
-            $ephemeralKey = EphemeralKey::create(
-                ['customer' => $user->stripe_customer_id],
-                ['stripe_version' => '2022-11-15']
-            );
+    //         $ephemeralKey = EphemeralKey::create(
+    //             ['customer' => $user->stripe_customer_id],
+    //             ['stripe_version' => '2022-11-15']
+    //         );
 
-            $setupIntent = SetupIntent::create([
-                'customer' => $user->stripe_customer_id,
-                'payment_method_types' => ['card'],
-            ]);
+    //         $setupIntent = SetupIntent::create([
+    //             'customer' => $user->stripe_customer_id,
+    //             'payment_method_types' => ['card'],
+    //         ]);
 
-            return $this->sendResponse([
-                'setupIntent' => $setupIntent->client_secret,
-                'ephemeralKey' => $ephemeralKey->secret,
-                'customer' => $user->stripe_customer_id,
-                'publishableKey' => config('services.stripe.key'),
-            ], 'Setup Intent Created Successfully');
+    //         return $this->sendResponse([
+    //             'setupIntent' => $setupIntent->client_secret,
+    //             'ephemeralKey' => $ephemeralKey->secret,
+    //             'customer' => $user->stripe_customer_id,
+    //             'publishableKey' => config('services.stripe.key'),
+    //         ], 'Setup Intent Created Successfully');
 
-        } catch (\Exception $e) {
-            return $this->sendError($e->getMessage(), [], 500);
-        }
-    }
+    //     } catch (\Exception $e) {
+    //         return $this->sendError($e->getMessage(), [], 500);
+    //     }
+    // }
 
     /**
      * Add Manual Payment Method (with Duplicate Check)
@@ -55,7 +59,7 @@ class PaymentCardController extends Controller
 
         try {
             $user = $this->getOrCreateCustomer($request->user());
-            
+
             $newMethod = PaymentMethod::retrieve($request->payment_method_id);
             $newFingerprint = $newMethod->card->fingerprint;
 
@@ -67,7 +71,7 @@ class PaymentCardController extends Controller
 
             foreach ($existingMethods->data as $method) {
                 if ($method->card->fingerprint === $newFingerprint) {
-                     return $this->sendError('This card already exists.', [], 400);
+                    return $this->sendError('This card already exists.', [], 400);
                 }
             }
 
