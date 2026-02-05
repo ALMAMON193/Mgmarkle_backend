@@ -16,15 +16,19 @@ class ProfileResource extends JsonResource
             'gender' => $this->gender,
             'about_us' => $this->about_us,
             'profile_picture' => $this->profile_picture ? Helper::generateURL($this->profile_picture) : '',
-            'affiliated_offer' => $this->affiliated_offer,
             'topic_offer' => is_string($this->topic_offer) ? json_decode($this->topic_offer) : $this->topic_offer,
-            'category_name' => $this->category ? $this->category->name : null,
-            'sub_categories' => $this->subCategories->map(function ($sub) {
-                return [
-                    'id' => $sub->id,
-                    'name' => $sub->name,
-                ];
-            }),
+
+            // Conditionally add fields if user is a spiritual_guide
+            $this->mergeWhen($this->user->user_type === 'spiritual_guide', [
+                'affiliated_offer' => $this->affiliated_offer,
+                'category_name' => $this->category ? $this->category->name : null,
+                'sub_categories' => $this->subCategories->map(function ($sub) {
+                    return [
+                        'id' => $sub->id,
+                        'name' => $sub->name,
+                    ];
+                }),
+            ]),
         ];
     }
 }

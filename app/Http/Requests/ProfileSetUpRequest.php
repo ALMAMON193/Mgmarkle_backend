@@ -21,8 +21,8 @@ class ProfileSetUpRequest extends FormRequest
             'affiliated_offer' => 'nullable|string|max:255',
             'topic_offer' => 'required|array',
             'topic_offer.*' => 'string|max:255',
-            'category_id' => 'nullable|exists:categories,id',
-            'sub_categories' => 'required|array|min:1',
+            'category_id' => $this->user()->user_type === 'spiritual_guide' ? 'required|exists:categories,id' : 'nullable|exists:categories,id',
+            'sub_categories' => $this->user()->user_type === 'spiritual_guide' ? 'required|array|min:1' : 'nullable|array',
             'sub_categories.*' => 'exists:sub_categories,id',
         ];
     }

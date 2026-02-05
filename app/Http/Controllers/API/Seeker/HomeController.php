@@ -25,6 +25,7 @@ class HomeController extends Controller
             ->first();
 
         $popularLeaders = User::where('user_type', 'spiritual_guide')
+            ->has('profile')
             ->with('profile')
             ->withAvg('ratings', 'rating')
             ->orderByRaw('ratings_avg_rating IS NULL ASC, ratings_avg_rating DESC')

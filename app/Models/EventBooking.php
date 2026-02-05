@@ -19,9 +19,6 @@ class EventBooking extends Model
         'status',
         'starts_at',
         'ends_at',
-        'zoom_meeting_id',
-        'zoom_join_url',
-        'zoom_start_url',
     ];
 
     /**

@@ -23,6 +23,7 @@ class StoreRequest extends FormRequest
             'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'visibility' => 'nullable|in:public,private',
+            'zoom_session_id' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
         ];
     }

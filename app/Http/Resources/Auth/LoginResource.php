@@ -34,6 +34,8 @@ class LoginResource extends JsonResource
                 : ($this->verified_at ? Carbon::parse($this->verified_at)->toDateTimeString() : 'N/A'),
             // ✅ Check if profile exists
             'profile_setup' => $this->profile ? true : false,
+            'is_subscribed' => $this->is_subscribed,
+            'is_online' => $this->is_online,
         ];
     }
 }

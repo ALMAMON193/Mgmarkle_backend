@@ -13,32 +13,46 @@ class RatingController extends Controller
 
     public function store(Request $request)
     {
-        $user = $request->user();
+        $user = auth()->user();
 
         // 1️⃣ Validate input
         $validated = $request->validate([
-            'event_id' => 'required|exists:events,id',
-            'rating' => 'required|numeric|min:0|max:5',
+            'leader_id' => 'required|exists:users,id',
+            'rating' => 'required|numeric|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
         ]);
 
-        // 2️⃣ Find existing rating
-        $rating = Rating::firstOrNew([
-            'event_id' => $validated['event_id'],
+        // 2️⃣ Check if the target is a spiritual guide
+        $leader = \App\Models\User::find($validated['leader_id']);
+        if ($leader->user_type !== 'spiritual_guide') {
+            return $this->sendError('You can only rate Spiritual Guides.', [], 422);
+        }
+
+        // 3️⃣ Prevent self-rating
+        if ($user->id == $leader->id) {
+            return $this->sendError('You cannot rate yourself.', [], 422);
+        }
+
+        // 4️⃣ Find existing rating or create new one
+        $searchData = [
             'user_id' => $user->id,
-        ]);
+            'leader_id' => $validated['leader_id'],
+        ];
 
-        // 3️⃣ Update rating fields
-        $rating->rating = $validated['rating'];
-        $rating->comment = $validated['comment'] ?? $rating->comment;
-        $rating->save();
+        $rating = Rating::updateOrCreate(
+            $searchData,
+            [
+                'rating' => $validated['rating'],
+                'comment' => $validated['comment'] ?? null,
+            ]
+        );
 
-        // 4️⃣ Return response
+        // 5️⃣ Return response
         return $this->sendResponse(
-            $rating, // data
+            $rating,
             $rating->wasRecentlyCreated
-                ? 'Event rated successfully.'
-                : 'Event rating updated successfully.'
+                ? 'Rating submitted successfully.'
+                : 'Rating updated successfully.'
         );
     }
 }

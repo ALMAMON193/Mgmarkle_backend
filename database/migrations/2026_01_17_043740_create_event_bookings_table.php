@@ -21,9 +21,6 @@ return new class extends Migration
                 ->default('pending');
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
-            $table->string('zoom_meeting_id')->nullable();
-            $table->string('zoom_join_url')->nullable();
-            $table->string('zoom_start_url')->nullable();
             $table->timestamps();
         });
     }

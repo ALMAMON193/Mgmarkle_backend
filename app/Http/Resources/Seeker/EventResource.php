@@ -29,15 +29,20 @@ class EventResource extends JsonResource
 
         // Get joined users avatars (limit 3)
         $joinedUsers = $this->bookings()
-            ->with('user.profile')
+            ->with(['user.profile'])
             ->take(3)
             ->get()
             ->map(function ($booking) {
-                return $booking->user->profile->profile_picture
-                    ? Helper::generateURL($booking->user->profile->profile_picture)
-                    : null; // Or default avatar URL
-            })
-            ->filter(); // Remove nulls
+                // Safe check for user and profile
+                if ($booking->user && $booking->user->profile && $booking->user->profile->profile_picture) {
+                    return Helper::generateURL($booking->user->profile->profile_picture);
+                }
+
+                // Fallback to initial-based avatar
+                $name = $booking->user->name ?? 'User';
+
+                return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
+            });
 
         return [
             'id' => $this->id,
@@ -52,15 +57,15 @@ class EventResource extends JsonResource
             'organizer' => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,
-                'role' => 'Organizer', // Or logic to determine role/title
-                'avatar' => $this->user->profile && $this->user->profile->profile_picture
+                'role' => 'Organizer',
+                'avatar' => ($this->user->profile && $this->user->profile->profile_picture)
                     ? Helper::generateURL($this->user->profile->profile_picture)
-                    : null,
+                    : 'https://ui-avatars.com/api/?name='.urlencode($this->user->name).'&color=7F9CF5&background=EBF4FF',
             ],
 
             // Join Status
             'joined_count' => $this->bookings()->count(),
-            'joined_users' => $joinedUsers->values(), // Reset keys
+            'joined_users' => $joinedUsers->values(),
             'is_joined' => $isJoined,
         ];
     }

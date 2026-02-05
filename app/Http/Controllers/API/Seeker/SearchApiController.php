@@ -15,7 +15,11 @@ class SearchApiController extends Controller
     public function searchProfiles(Request $request)
     {
         // Search by User Name, Category, or Topic
-        $query = Profile::query()->with(['user', 'category', 'subCategories']);
+        $query = Profile::query()
+            ->whereHas('user', function ($q) {
+                $q->where('user_type', 'spiritual_guide');
+            })
+            ->with(['user', 'category', 'subCategories']);
 
         if ($request->filled('search')) {
             $query->search($request->search);
@@ -29,13 +33,19 @@ class SearchApiController extends Controller
         }
 
         $profiles = $query->get()->map(function ($profile) {
+            $user = $profile->user;
+
             return [
                 'user_id' => $profile->user_id,
-                'name' => $profile->user->name ?? null,
+                'name' => $user->name ?? 'N/A',
+                'affiliation' => $profile->school_name ?? 'Grace Fellowship',
+                'status' => $user->is_online ? 'Available Now' : 'Offline',
+                'price' => '$'.number_format($user->session_price, 0).'/1 hour',
                 'category' => $profile->category->name ?? null,
-                'sub_categories' => $profile->subCategories->pluck('name'), // Return list of subcategories
-                'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : null,
-                'average_rating' => $profile->user->averageRating(), // Use model helper
+                'sub_categories' => $profile->subCategories->pluck('name'),
+                'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : 'https://ui-avatars.com/api/?name='.urlencode($user->name ?? 'User').'&color=7F9CF5&background=EBF4FF',
+                'average_rating' => $user->averageRating(),
+                'is_online' => $user->is_online ?? false,
             ];
         });
 
@@ -45,7 +55,11 @@ class SearchApiController extends Controller
     public function filterProfiles(Request $request)
     {
         // Base query with relationships
-        $query = Profile::with(['user', 'category', 'subCategories']);
+        $query = Profile::query()
+            ->whereHas('user', function ($q) {
+                $q->where('user_type', 'spiritual_guide');
+            })
+            ->with(['user', 'category', 'subCategories']);
 
         // Filter by Category Name (Exact or Partial)
         if ($request->filled('category_name')) {
@@ -61,6 +75,15 @@ class SearchApiController extends Controller
                 $q->where('name', 'like', '%'.$subCategoryName.'%');
             });
         }
+
+        // Filter by Online/Offline Status
+        if ($request->filled('is_online')) {
+            $isOnline = filter_var($request->is_online, FILTER_VALIDATE_BOOLEAN);
+            $query->whereHas('user', function ($q) use ($isOnline) {
+                $q->where('is_online', $isOnline);
+            });
+        }
+
         $profiles = $query->get();
         // Filter by Rating (Calculated field)
         if ($request->filled('rating')) {
@@ -71,14 +94,20 @@ class SearchApiController extends Controller
         }
 
         // Map results
-        $data = $profiles->values()->map(function ($profile) { // values() resets keys after filter
+        $data = $profiles->values()->map(function ($profile) {
+            $user = $profile->user;
+
             return [
                 'user_id' => $profile->user_id,
-                'name' => $profile->user->name ?? null,
+                'name' => $user->name ?? 'N/A',
+                'affiliation' => $profile->school_name ?? 'Grace Fellowship',
+                'status' => $user->is_online ? 'Available Now' : 'Offline',
+                'price' => '$'.number_format($user->session_price, 0).'/1 hour',
                 'category' => $profile->category->name ?? null,
                 'sub_categories' => $profile->subCategories->pluck('name'),
-                'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : null,
-                'average_rating' => $profile->user->averageRating(),
+                'avatar' => $profile->profile_picture ? Helper::generateURL($profile->profile_picture) : 'https://ui-avatars.com/api/?name='.urlencode($user->name ?? 'User').'&color=7F9CF5&background=EBF4FF',
+                'average_rating' => $user->averageRating(),
+                'is_online' => $user->is_online ?? false,
             ];
         });
 

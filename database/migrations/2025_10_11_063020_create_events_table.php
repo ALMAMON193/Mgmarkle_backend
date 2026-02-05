@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->text('description')->nullable();
             $table->enum('visibility', ['public', 'private'])->default('public');
+            // zoom session id
+            $table->string('zoom_session_id')->nullable();
             $table->string('image')->nullable();
             $table->timestamps();
         });

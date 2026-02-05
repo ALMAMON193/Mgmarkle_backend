@@ -16,7 +16,12 @@ class Event extends Model
         'location',
         'description',
         'visibility',
+        'zoom_session_id',
         'image',
+    ];
+
+    protected $casts = [
+        'date' => 'date',
     ];
 
     public function user()

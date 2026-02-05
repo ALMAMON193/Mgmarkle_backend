@@ -9,6 +9,7 @@ use App\Http\Requests\SpiritualGuide\UpdateRequest;
 use App\Http\Resources\SpiritualGuide\ListResource;
 use App\Http\Resources\SpiritualGuide\StoreResource;
 use App\Models\Event;
+use App\Models\EventBooking;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Exception;
@@ -27,12 +28,28 @@ class EventApiController extends Controller
 
         $query = Event::query()->orderBy('created_at', 'desc');
 
+        // Nullify zoom_session_id for expired events before fetching
+        Event::whereNotNull('zoom_session_id')
+            ->where(function ($query) {
+                $query->where('date', '<', now()->toDateString())
+                    ->orWhere(function ($q) {
+                        $q->where('date', '=', now()->toDateString())
+                            ->where('end_time', '<', now()->format('H:i'));
+                    });
+            })
+            ->update(['zoom_session_id' => null]);
+
         if ($filter === 'weekly') {
             $query->whereBetween('date', [$today->startOfWeek()->toDateString(), $today->endOfWeek()->toDateString()]);
         } elseif ($filter === 'monthly') {
             $query->whereMonth('date', $today->month)
                 ->whereYear('date', $today->year);
         }
+
+        // Update EventBooking status to expired for those that have passed
+        EventBooking::where('status', '!=', 'expired')
+            ->where('ends_at', '<', now())
+            ->update(['status' => 'expired']);
 
         $events = $query->get();
 
@@ -105,6 +122,12 @@ class EventApiController extends Controller
     {
         try {
             $event = Event::with('user')->findOrFail($id);
+
+            // Check if expired and nullify zoom_session_id
+            $eventEndTime = Carbon::parse($event->date->format('Y-m-d') . ' ' . $event->end_time);
+            if (now()->gt($eventEndTime) && !is_null($event->zoom_session_id)) {
+                $event->update(['zoom_session_id' => null]);
+            }
 
             return $this->sendResponse(
                 new StoreResource($event),

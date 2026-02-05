@@ -24,6 +24,7 @@ class ListResource extends JsonResource
             'location' => $this->location,
             'visibility' => $this->visibility,
             'is_popular' => $this->is_popular,
+            'zoom_session_id' => $this->zoom_session_id,
             'image_url' => $this->image ? Helper::generateURL($this->image) : null,
         ];
     }

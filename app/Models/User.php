@@ -34,6 +34,7 @@ class User extends Authenticatable
         'subscription_plan',
         'subscription_start_at',
         'subscription_end_at',
+        'is_online',
     ];
 
     protected $hidden = [
@@ -52,6 +53,7 @@ class User extends Authenticatable
 
         'password' => 'hashed',
         'is_subscribed' => 'boolean',
+        'is_online' => 'boolean',
     ];
 
     public function otps()

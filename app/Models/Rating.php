@@ -8,6 +8,8 @@ class Rating extends Model
 {
     protected $fillable = [
         'user_id',
+        'leader_id',
+        'event_id',
         'rating',
         'comment',
     ];

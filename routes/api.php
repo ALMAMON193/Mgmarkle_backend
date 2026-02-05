@@ -35,6 +35,7 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
 
     // Auth Actions
     Route::post('auth/logout', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'logoutApi']);
+    Route::post('auth/update-status', [\App\Http\Controllers\API\Auth\AuthApiController::class, 'updateStatus']);
 
     // Profile Setup (Initial Setup)
     Route::get('profile', [\App\Http\Controllers\API\ProfileSetup\ProfileSetUpApiController::class, 'show']);
@@ -72,6 +73,12 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
     });
     // --- Seeker Routes ---
     Route::prefix('seeker')->group(function () {
+
+        // profie details and profie update
+        Route::prefix('profile')->group(function () {
+            Route::get('details', [\App\Http\Controllers\API\Seeker\Profile\ProfileApiController::class, 'profileDetails']);
+            Route::post('update', [\App\Http\Controllers\API\Seeker\Profile\ProfileApiController::class, 'updateProfile']);
+        });
         // Dashboard / Home
         Route::get('home', [\App\Http\Controllers\API\Seeker\HomeController::class, 'index']);
         // Profile Search & Filtering
@@ -81,6 +88,7 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
         Route::get('spiritual-guides/{id}', [\App\Http\Controllers\API\Seeker\LeaderController::class, 'show']);
         // Event Interaction
         Route::get('events/{id}', [\App\Http\Controllers\API\Seeker\EventController::class, 'show']);
+        Route::post('join-event/{id}', [\App\Http\Controllers\API\Seeker\EventController::class, 'joinEvent']);
         Route::post('ratting', [\App\Http\Controllers\API\Seeker\RatingController::class, 'store']);
 
         // Payment

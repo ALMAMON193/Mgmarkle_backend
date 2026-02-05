@@ -34,6 +34,7 @@ class StoreResource extends JsonResource
             'description' => $this->description,
             'visibility' => $this->visibility,
             'is_popular' => $this->is_popular,
+            'zoom_session_id' => $this->zoom_session_id,
             'image_url' => $this->image ? Helper::generateURL($this->image) : null,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),

@@ -213,13 +213,33 @@ class AuthApiController extends Controller
     public function logoutApi(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
-            $request->user()->currentAccessToken()->delete();
+            $user = $request->user();
+            $user->update(['is_online' => false]);
+            $user->currentAccessToken()->delete();
 
             return $this->sendResponse([], 'Logout successful.');
         } catch (Exception $e) {
             Log::error('Logout Error: '.$e->getMessage());
 
             return $this->sendError('Logout failed', ['error' => 'Please try again'], 500);
+        }
+    }
+
+    public function updateStatus(Request $request): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $request->validate([
+                'status' => 'required|boolean',
+            ]);
+
+            $user = auth()->user();
+            $user->update(['is_online' => $request->status]);
+
+            return $this->sendResponse(new LoginResource($user), 'Status updated successfully.');
+        } catch (Exception $e) {
+            Log::error('Status Update Error: '.$e->getMessage());
+
+            return $this->sendError('Status update failed', ['error' => $e->getMessage()], 500);
         }
     }
 }
