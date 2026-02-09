@@ -19,8 +19,11 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->enum('status', ['pending', 'paid', 'cancelled', 'expired'])
                 ->default('pending');
+            // status enum add accepted and declined
+            $table->enum('booking_status', ['accepted', 'declined', 'completed', 'ongoing'])->default('ongoing');
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
+
             $table->timestamps();
         });
     }

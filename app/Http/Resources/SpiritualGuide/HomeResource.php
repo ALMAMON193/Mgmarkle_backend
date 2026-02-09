@@ -10,9 +10,9 @@ class HomeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'today_schedule' => StoreResource::collection($this['today_schedule']),
-            'new_booking_request' => StoreResource::collection($this['new_booking_request']),
-            'upcoming_request' => StoreResource::collection($this['upcoming_request']),
+            'today_schedule' => HomeScheduleResource::collection($this['today_schedule']),
+            'new_booking_request' => HomeBookingResource::collection($this['new_booking_request']),
+            'upcoming_event' => HomeEventResource::collection($this['upcoming_request']),
         ];
     }
 }

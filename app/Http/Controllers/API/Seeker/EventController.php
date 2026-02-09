@@ -60,6 +60,7 @@ class EventController extends Controller
         $booking = EventBooking::create([
             'event_id' => $event->id,
             'user_id' => $user->id,
+            'leader_id' => $event->user_id,
             'booking_type' => 'subscription',
             'amount' => 0.00,
             'status' => 'paid',
@@ -70,6 +71,20 @@ class EventController extends Controller
         return $this->sendResponse(
             new EventBookingResource($booking),
             'Event Joined Successfully'
+        );
+    }
+
+    // List all event bookings for the seeker
+    public function myBookings(Request $request)
+    {
+        $bookings = EventBooking::where('user_id', $request->user()->id)
+            ->with(['event.user.profile', 'event'])
+            ->latest()
+            ->paginate(15);
+
+        return $this->sendResponse(
+            EventBookingResource::collection($bookings)->response()->getData(true),
+            'My Event Bookings Retrieved Successfully'
         );
     }
 }

@@ -20,6 +20,9 @@ class StoreResource extends JsonResource
                 'id' => $this->user->id ?? null,
                 'name' => $this->user->name ?? null,
                 'email' => $this->user->email ?? null,
+                'avatar' => ($this->user && $this->user->profile && $this->user->profile->profile_picture)
+                    ? Helper::generateURL($this->user->profile->profile_picture)
+                    : null,
             ],
             'title' => $this->title,
             'category' => $this->category,

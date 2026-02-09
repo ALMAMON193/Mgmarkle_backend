@@ -25,7 +25,7 @@ class Index extends Component
 
     public $showFilters = false;
 
-    public $showModal = false; // Added to control modal visibility
+    public $showModal = false;
 
     public $name;
 

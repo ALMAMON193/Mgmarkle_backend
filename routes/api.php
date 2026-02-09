@@ -51,6 +51,10 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
 
         // Dashboard / Home
         Route::get('home', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'index']);
+        Route::post('accept-booking-request/{id}', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'acceptBookingRequest']);
+        Route::post('decline-booking-request/{id}', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'declineBookingRequest']);
+        Route::get('booking-requests', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'bookingRequests']);
+        Route::get('all-schedule', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'allSchedule']);
 
         // Event Management
         Route::get('event-list', [\App\Http\Controllers\API\SpiritualGuide\EventApiController::class, 'eventList']);
@@ -90,6 +94,7 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
         Route::get('events/{id}', [\App\Http\Controllers\API\Seeker\EventController::class, 'show']);
         Route::post('join-event/{id}', [\App\Http\Controllers\API\Seeker\EventController::class, 'joinEvent']);
         Route::post('ratting', [\App\Http\Controllers\API\Seeker\RatingController::class, 'store']);
+        Route::get('my-event-bookings', [\App\Http\Controllers\API\Seeker\EventController::class, 'myBookings']);
 
         // Payment
         // Route::post('payment/setup-intent', [\App\Http\Controllers\API\Seeker\PaymentCardController::class, 'createSetupIntent']);

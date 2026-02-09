@@ -19,6 +19,7 @@ class EventBooking extends Model
         'status',
         'starts_at',
         'ends_at',
+        'booking_status',
     ];
 
     /**
