@@ -75,6 +75,7 @@ class HomeResource extends JsonResource
                 'location' => $event->location,
                 'date' => $date->format('d M, l'),
                 'time' => $startTime->format('g a').' - '.$endTime->format('g a'),
+                'image' => $event->image ? \App\Helpers\Helper::generateURL($event->image) : null,
                 'zoom_session_id' => $event->zoom_session_id,
                 'organizer' => [
                     'id' => $event->user->id,
