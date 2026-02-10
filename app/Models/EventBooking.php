@@ -20,6 +20,7 @@ class EventBooking extends Model
         'starts_at',
         'ends_at',
         'booking_status',
+        'reschedule_reason',
     ];
 
     /**

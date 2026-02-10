@@ -55,6 +55,8 @@ Route::middleware(['advanced.throttle', 'auth:sanctum'])->group(function () {
         Route::post('decline-booking-request/{id}', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'declineBookingRequest']);
         Route::get('booking-requests', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'bookingRequests']);
         Route::get('all-schedule', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'allSchedule']);
+        Route::get('all-appointments', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'allAppointments']);
+        Route::post('reschedule-booking/{id}', [\App\Http\Controllers\API\SpiritualGuide\HomeApiController::class, 'rescheduleBooking']);
 
         // Event Management
         Route::get('event-list', [\App\Http\Controllers\API\SpiritualGuide\EventApiController::class, 'eventList']);

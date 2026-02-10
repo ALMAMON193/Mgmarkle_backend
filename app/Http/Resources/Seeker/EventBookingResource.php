@@ -18,12 +18,15 @@ class EventBookingResource extends JsonResource
             'id' => $this->id,
             'status' => $this->status,
             'booking_type' => $this->booking_type,
+            'booking_status' => $this->booking_status,
             'joined_at' => $this->created_at->format('d M, Y h:i A'),
+            'starts_at' => $this->starts_at?->format('d F, Y h:i A'),
+            'ends_at' => $this->ends_at?->format('d F, Y h:i A'),
             'event' => [
                 'id' => $event->id ?? null,
                 'title' => $event->title ?? null,
-                'date' => $eventDate ? $eventDate->format('d F, Y') : null,
-                'time' => ($startTime && $endTime) ? $startTime->format('g:i A').' - '.$endTime->format('g:i A') : null,
+                'date' => $this->starts_at ? $this->starts_at->format('d F, Y') : ($eventDate ? $eventDate->format('d F, Y') : null),
+                'time' => $this->starts_at ? $this->starts_at->format('g:i A').' - '.$this->ends_at->format('g:i A') : (($startTime && $endTime) ? $startTime->format('g:i A').' - '.$endTime->format('g:i A') : null),
                 'location' => $event->location ?? null,
                 'image' => ($event && $event->image) ? \App\Helpers\Helper::generateURL($event->image) : null,
                 'organizer' => [
