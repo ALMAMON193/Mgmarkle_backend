@@ -41,16 +41,22 @@ class EventResource extends JsonResource
                 // Fallback to initial-based avatar
                 $name = $booking->user->name ?? 'User';
 
-                return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
+                return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&color=7F9CF5&background=EBF4FF';
             });
+
+        $user = auth('sanctum')->user() ?? auth()->user();
+        $userIsSubscribed = $user ? (bool) $user->is_subscribed : false;
+        $userCredits = $user ? (int) ($user->available_credits ?? 0) : 0;
+        $canJoin = $userIsSubscribed || ($userCredits > 0);
 
         return [
             'id' => $this->id,
             'title' => $this->title,
             'date_formatted' => $date->format('d F, Y'),
-            'time_formatted' => $date->format('l').', '.$startTime->format('g:iA').' - '.$endTime->format('g:iA'),
+            'time_formatted' => $date->format('l') . ', ' . $startTime->format('g:iA') . ' - ' . $endTime->format('g:iA'),
             'location' => $this->location,
             'description' => $this->description,
+            'session_id' => $this->zoom_session_id,
             'image' => $this->image ? Helper::generateURL($this->image) : null,
 
             // Organizer Details
@@ -58,15 +64,19 @@ class EventResource extends JsonResource
                 'id' => $this->user->id,
                 'name' => $this->user->name,
                 'role' => 'Organizer',
+                'category' => $this->user->profile?->category?->name,
                 'avatar' => ($this->user->profile && $this->user->profile->profile_picture)
                     ? Helper::generateURL($this->user->profile->profile_picture)
-                    : 'https://ui-avatars.com/api/?name='.urlencode($this->user->name).'&color=7F9CF5&background=EBF4FF',
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($this->user->name) . '&color=7F9CF5&background=EBF4FF',
             ],
 
-            // Join Status
-            'joined_count' => $this->bookings()->count(),
-            'joined_users' => $joinedUsers->values(),
-            'is_joined' => $isJoined,
+            // Join & Subscription Status
+            'joined_count'           => $this->bookings()->count(),
+            'joined_users'           => $joinedUsers->values(),
+            'is_already_joined'      => $isJoined,
+            'has_event_access'       => $canJoin,
+            'user_is_subscribed'     => $userIsSubscribed,
+            'user_available_credits' => $userCredits,
         ];
     }
 }

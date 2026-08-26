@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\SpiritualGuide;
 
+use App\Helpers\Helper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,13 +25,15 @@ class ProfileResource extends JsonResource
                 'birth_date' => $this->profile?->birth_date ?? null,
                 'gender' => $this->profile?->gender ?? null,
                 'about_us' => $this->profile?->about_us ?? null,
-                'profile_picture' => $this->profile?->profile_picture ?? null,
+                'profile_picture' => ($this->profile && $this->profile->profile_picture)
+                    ? Helper::generateURL($this->profile->profile_picture)
+                    : null,
                 'affiliated_offer' => $this->profile?->affiliated_offer ?? null,
                 'topic_offer' => $this->profile?->topic_offer ?? [],
                 'category_name' => $this->profile?->category?->name ?? null,
-                'sub_category_name' => $this->profile?->subCategory?->name ?? null,
+                'sub_category_name' => $this->profile?->subCategories->pluck('name')->toArray() ?? [],
             ]) ?? [],
-            'available_slots' => $this->whenLoaded('availableSlots', $this->availableSlots) ?? [],
+            'available_slots' => $this->whenLoaded('availableSlots'),
         ];
     }
 }

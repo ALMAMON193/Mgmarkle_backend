@@ -33,8 +33,9 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->is_subscribed) {
-            return $this->sendError('You need a subscription to join this event.', [], 403);
+        // Check if user has active subscription OR at least 1 session credit
+        if (! $user->is_subscribed && ($user->available_credits ?? 0) < 1) {
+            return $this->sendError('You need an active subscription or session credit to join this event.', [], 403);
         }
 
         $event = Event::find($id);
@@ -52,20 +53,29 @@ class EventController extends Controller
             return $this->sendError('You have already joined this event.', [], 409);
         }
 
+        // 3. Determine booking type and deduct credit if non-subscribed
+        if ($user->is_subscribed) {
+            $bookingType = 'subscription';
+        } else {
+            $bookingType = 'credit';
+            // Deduct 1 session credit for non-subscribed pay-per-session user
+            $user->decrement('available_credits', 1);
+        }
+
         // Prepare timestamps from event date and times
         $eventDate = $event->date->format('Y-m-d');
         $startsAt = \Carbon\Carbon::parse($eventDate.' '.$event->start_time);
         $endsAt = \Carbon\Carbon::parse($eventDate.' '.$event->end_time);
 
         $booking = EventBooking::create([
-            'event_id' => $event->id,
-            'user_id' => $user->id,
-            'leader_id' => $event->user_id,
-            'booking_type' => 'subscription',
-            'amount' => 0.00,
-            'status' => 'paid',
-            'starts_at' => $startsAt,
-            'ends_at' => $endsAt,
+            'event_id'     => $event->id,
+            'user_id'      => $user->id,
+            'leader_id'    => $event->user_id,
+            'booking_type' => $bookingType,
+            'amount'       => 0.00,
+            'status'       => 'paid',
+            'starts_at'    => $startsAt,
+            'ends_at'      => $endsAt,
         ]);
 
         return $this->sendResponse(

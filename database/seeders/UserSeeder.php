@@ -19,6 +19,9 @@ class UserSeeder extends Seeder
             'email' => 'admin@admin.com',
             'password' => Hash::make('12345678'),
             'user_type' => 'admin',
+            'is_subscribed' => false,
+            'subscription_plan' => null,
+            'available_credits' => 0,
             'is_verified' => true,
             'email_verified_at' => now(),
             'verified_at' => now(),
@@ -26,14 +29,16 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // 10 User
+        // Seekers (All default to clean non-subscribed state)
         for ($i = 1; $i <= 5; $i++) {
             DB::table('users')->insert([
                 'name' => "seeker $i",
                 'email' => "seeker$i@gmail.com",
                 'password' => Hash::make('12345678'),
                 'user_type' => 'seeker',
-                'is_subscribed' => true,
+                'is_subscribed' => false,
+                'subscription_plan' => null,
+                'available_credits' => 0,
                 'is_verified' => true,
                 'email_verified_at' => now(),
                 'verified_at' => now(),
@@ -41,13 +46,17 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        // Spiritual Guides / Leaders
         for ($i = 1; $i <= 5; $i++) {
             DB::table('users')->insert([
                 'name' => "Spiritual Guide $i",
                 'email' => "spiritual_guide$i@gmail.com",
                 'password' => Hash::make('12345678'),
                 'user_type' => 'spiritual_guide',
-                'is_subscribed' => true,
+                'is_subscribed' => false,
+                'subscription_plan' => null,
+                'available_credits' => 0,
                 'is_verified' => true,
                 'email_verified_at' => now(),
                 'verified_at' => now(),

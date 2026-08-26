@@ -31,11 +31,13 @@ class AuthApiController extends Controller
         DB::beginTransaction(); // Start transaction
 
         try {
-            // Step 2: Create User
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'name'              => $request->name,
+                'email'             => $request->email,
+                'password'          => Hash::make($request->password),
+                'user_type'         => $request->user_type ?? 'seeker',
+                'is_subscribed'     => false,
+                'available_credits' => 0,
             ]);
 
             // Step 3: Send OTP safely
@@ -73,6 +75,11 @@ class AuthApiController extends Controller
 
             if (! $user || ! Hash::check($request->password, $user->password)) {
                 return $this->sendError('Invalid Credentials', [], 401);
+            }
+
+            // Role Check (If app specifies user_type during login)
+            if ($request->filled('user_type') && $user->user_type !== $request->user_type) {
+                return $this->sendError("Unauthorized access. This account is registered as a '{$user->user_type}'.", [], 403);
             }
 
             if (! $user->email_verified_at) {

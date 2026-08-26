@@ -4,7 +4,9 @@ namespace App\Http\Controllers\API\Seeker;
 
 use App\Http\Controllers\Controller;
 use App\Models\LeaderBooking;
+use App\Models\User;
 use App\Traits\ApiResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
@@ -131,5 +133,55 @@ class AppointmentController extends Controller
         ]);
 
         return $this->sendResponse([], 'Zoom details updated successfully.');
+    }
+
+    /**
+     * Book a 1-on-1 session with a leader using available Session Credit
+     */
+    public function bookWithCredit(Request $request)
+    {
+        $request->validate([
+            'leader_id' => 'required|exists:users,id',
+            'date'      => 'required|date_format:Y-m-d',
+            'time'      => 'required|date_format:H:i',
+        ]);
+
+        $user = $request->user();
+
+        // 1. Check if user has at least 1 credit available
+        if (($user->available_credits ?? 0) < 1) {
+            return $this->sendError(
+                'Insufficient credits. You do not have an available session credit. Please purchase a single session or upgrade your membership.',
+                ['available_credits' => 0],
+                402
+            );
+        }
+
+        $leader = User::findOrFail($request->leader_id);
+        $amount = $leader->session_price > 0 ? $leader->session_price : 50.00;
+
+        $starts_at = Carbon::parse($request->date . ' ' . $request->time);
+        $ends_at   = (clone $starts_at)->addHour();
+
+        // 2. Deduct 1 credit from user
+        $user->decrement('available_credits', 1);
+
+        // 3. Create Leader Booking with status 'paid'
+        $booking = LeaderBooking::create([
+            'user_id'   => $user->id,
+            'leader_id' => $leader->id,
+            'amount'    => $amount,
+            'status'    => 'paid',
+            'starts_at' => $starts_at,
+            'ends_at'   => $ends_at,
+        ]);
+
+        return $this->sendResponse([
+            'booking_id'        => $booking->id,
+            'status'            => $booking->status,
+            'remaining_credits' => (int) $user->fresh()->available_credits,
+            'starts_at'         => $starts_at->toDateTimeString(),
+            'ends_at'           => $ends_at->toDateTimeString(),
+        ], 'Session booked successfully using 1 session credit.');
     }
 }

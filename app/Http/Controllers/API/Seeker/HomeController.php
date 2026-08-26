@@ -20,7 +20,7 @@ class HomeController extends Controller
         $upcomingSchedule = \App\Models\EventBooking::where('user_id', $authUserId)
             ->where('status', 'paid')
             ->where('starts_at', '>', now())
-            ->with(['event', 'event.user', 'event.user.profile'])
+            ->with(['event.user.profile.category'])
             ->orderBy('starts_at', 'asc')
             ->first();
 
@@ -34,6 +34,7 @@ class HomeController extends Controller
 
         $upcomingEvent = Event::where('date', '>=', $today)
             ->where('visibility', 'public')
+            ->with(['user.profile.category'])
             ->orderBy('date', 'asc')
             ->orderBy('start_time', 'asc')
             ->take(3)

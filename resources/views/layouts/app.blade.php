@@ -7,6 +7,8 @@
     <title>Professional Admin Dashboard</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <!-- ApexCharts for Data Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     @livewireStyles
 </head>
 
@@ -88,47 +90,6 @@
                             <span class="sidebar-text">Sub Category</span>
                         </a>
                     </li>
-
-                    <!-- Pages Dropdown -->
-                    {{-- <li>
-                        <button onclick="toggleDropdown(this)"
-                            class="sidebar_links flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[hsl(222,47%,20%)] hover:text-[hsl(217,91%,60%)]">
-                            <div class="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round"
-                                    class="lucide lucide-package h-5 w-5 flex-shrink-0">
-                                    <path
-                                        d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z">
-                                    </path>
-                                    <path d="M12 22V12"></path>
-                                    <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"></path>
-                                    <path d="m7.5 4.27 9 5.15"></path>
-                                </svg>
-                                <span class="sidebar-text">Pages</span>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="lucide lucide-chevron-right h-4 w-4 dropdown-icon">
-                                <path d="m9 18 6-6-6-6"></path>
-                            </svg>
-                        </button>
-                        <ul class="dropdown-menu hidden ml-6 space-y-1">
-                            <li>
-                                <a href="/pages/login"
-                                    class="block px-3 py-2 text-sm hover:bg-[hsl(222,47%,20%)] hover:text-[hsl(217,91%,60%)] rounded-lg sidebar-text">
-                                    Login
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/pages/register"
-                                    class="block px-3 py-2 text-sm hover:bg-[hsl(222,47%,20%)] hover:text-[hsl(217,91%,60%)] rounded-lg sidebar-text">
-                                    Register
-                                </a>
-                            </li>
-                        </ul>
-                    </li> --}}
                 </ul>
             </nav>
         </aside>
@@ -204,10 +165,13 @@
                 </div>
             </header>
             <!-- Main Content Area -->
-            {{ $slot }}
+            <div class="flex-1 overflow-y-auto">
+                {{ $slot }}
+            </div>
         </div>
     </div>
     @livewireScripts
 </body>
 
 </html>
+

@@ -24,12 +24,15 @@ class RegisterResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'             => $this->id,
-            'name'           => $this->name,
-            'email'          => $this->email,
-            'user_type'      => $this->user_type,
-            'email_verified' => (bool) $this->email_verified_at,
-            'created_at'     => $this->created_at->toDateTimeString(),
+            'id'                => $this->id,
+            'name'              => $this->name,
+            'email'             => $this->email,
+            'user_type'         => $this->user_type ?? 'seeker',
+            'is_subscribed'     => (bool) $this->is_subscribed,
+            'available_credits' => (int) ($this->available_credits ?? 0),
+            'subscription_plan' => $this->subscription_plan,
+            'email_verified'    => (bool) $this->email_verified_at,
+            'created_at'        => $this->created_at->toDateTimeString(),
         ];
     }
 }

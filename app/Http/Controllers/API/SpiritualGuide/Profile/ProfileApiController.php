@@ -82,7 +82,7 @@ class ProfileApiController extends Controller
     // profile details
     public function profileDetails()
     {
-        $profileDetails = auth()->user()->load(['profile', 'availableSlots']);
+        $profileDetails = auth()->user()->load(['profile.category', 'profile.subCategories', 'availableSlots']);
 
         return $this->sendResponse(
             new ProfileResource($profileDetails),
@@ -119,11 +119,14 @@ class ProfileApiController extends Controller
             'profile_picture' => $validated['profile_picture'] ?? $profile->profile_picture,
             'affiliated_offer' => $validated['affiliated_offer'] ?? $profile->affiliated_offer,
             'topic_offer' => $validated['topic_offer'] ?? $profile->topic_offer,
-            'categories' => $validated['categories'] ?? $profile->categories,
-            'sub_categories' => $validated['sub_categories'] ?? $profile->sub_categories,
+            'category_id' => isset($validated['categories']) && ! empty($validated['categories']) ? $validated['categories'][0] : $profile->category_id,
         ]);
 
-        $updatedUser = $user->load(['profile', 'availableSlots']);
+        if (isset($validated['sub_categories'])) {
+            $profile->subCategories()->sync($validated['sub_categories']);
+        }
+
+        $updatedUser = $user->load(['profile.category', 'profile.subCategories', 'availableSlots']);
 
         return $this->sendResponse(
             new ProfileResource($updatedUser),

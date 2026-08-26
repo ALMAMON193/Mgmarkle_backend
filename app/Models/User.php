@@ -35,6 +35,11 @@ class User extends Authenticatable
         'subscription_start_at',
         'subscription_end_at',
         'is_online',
+
+        // session credits & revenuecat
+        'available_credits',
+        'product_id',
+        'package',
     ];
 
     protected $hidden = [
@@ -54,6 +59,7 @@ class User extends Authenticatable
         'password' => 'hashed',
         'is_subscribed' => 'boolean',
         'is_online' => 'boolean',
+        'available_credits' => 'integer',
     ];
 
     public function otps()

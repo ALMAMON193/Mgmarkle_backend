@@ -7,9 +7,10 @@ use App\Models\LeaderBooking;
 use App\Models\Payment;
 use App\Models\User;
 use App\Traits\ApiResponse;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Stripe\Customer;
 use Stripe\EphemeralKey;
 use Stripe\PaymentIntent;
@@ -186,5 +187,74 @@ class PaymentController extends Controller
                 'status' => 'failed',
             ]);
         }
+    }
+
+    /**
+     * Create Stripe Checkout Web URL for purchasing 1 Session Credit ($50)
+     */
+    public function createCreditCheckoutSession(Request $request)
+    {
+        try {
+            $user = $this->getOrCreateCustomer($request->user());
+
+            $session = \Stripe\Checkout\Session::create([
+                'customer' => $user->stripe_customer_id,
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'usd',
+                        'product_data' => [
+                            'name' => '1 Session Credit (Pay-Per-Session)',
+                            'description' => 'Single session credit for 1-on-1 session or group event access',
+                        ],
+                        'unit_amount' => 5000, // $50.00 in cents
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => url('/api/seeker/payment/success?session_id={CHECKOUT_SESSION_ID}'),
+                'cancel_url' => url('/api/seeker/payment/cancel'),
+                'metadata' => [
+                    'user_id' => $user->id,
+                    'type' => 'single_session_credit',
+                ],
+            ]);
+
+            return $this->sendResponse([
+                'checkout_url' => $session->url,
+                'session_id'   => $session->id,
+            ], 'Stripe Checkout URL generated successfully.');
+
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [], 500);
+        }
+    }
+
+    /**
+     * Payment Success Callback URL
+     */
+    public function paymentSuccess(Request $request)
+    {
+        $sessionId = $request->get('session_id');
+        if ($sessionId) {
+            try {
+                $session = \Stripe\Checkout\Session::retrieve($sessionId);
+                $userId = $session->metadata->user_id ?? null;
+                if ($userId) {
+                    $user = User::find($userId);
+                    if ($user) {
+                        $user->increment('available_credits', 1);
+                        Log::info("Granted 1 credit via Stripe Checkout URL to User #{$user->id}");
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error("Stripe Checkout Success Error: " . $e->getMessage());
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment Successful! 1 Session Credit has been added to your account. You can now close this window and join your event or book your session.',
+        ]);
     }
 }

@@ -72,6 +72,7 @@ class HomeResource extends JsonResource
             return [
                 'id' => $event->id,
                 'title' => $event->title,
+                'category' => $event->category,
                 'location' => $event->location,
                 'date' => $date->format('d M, l'),
                 'time' => $startTime->format('g a').' - '.$endTime->format('g a'),
@@ -80,6 +81,7 @@ class HomeResource extends JsonResource
                 'organizer' => [
                     'id' => $event->user->id,
                     'name' => $event->user->name ?? 'Organizer',
+                    'category' => $event->user->profile?->category?->name ?? 'N/A',
                     'avatar' => $event->user->profile?->profile_picture
                         ? \App\Helpers\Helper::generateURL($event->user->profile->profile_picture)
                         : 'https://ui-avatars.com/api/?name='.urlencode($event->user->name ?? 'User').'&color=7F9CF5&background=EBF4FF',

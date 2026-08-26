@@ -15,9 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Register middleware aliases here
         $middleware->alias([
-            'stack.record' => RecordStack::class,
+            'stack.record'      => RecordStack::class,
             'advanced.throttle' => \App\Http\Middleware\AdvancedThrottle::class,
-            'auth.rate.limit' => \App\Http\Middleware\AuthRateLimit::class,
+            'auth.rate.limit'   => \App\Http\Middleware\AuthRateLimit::class,
+            'role'              => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
